@@ -4,7 +4,7 @@ using UnityEngine;
 
 using AirSig;
 
-public class PlayerGesture1 : BasedGestureHandle {
+public class PlayerGesture1 : BasedGestureHandle1 {
 
     // Gesture index to use for training and verifying custom gesture. Valid range is between 1 and 1000
     // Beware that setting to 100 will overwrite your player signature.

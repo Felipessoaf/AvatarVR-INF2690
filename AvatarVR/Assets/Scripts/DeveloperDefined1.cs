@@ -3,7 +3,7 @@ using UnityEngine;
 
 using AirSig;
 
-public class DeveloperDefined1 : BasedGestureHandle {
+public class DeveloperDefined1 : BasedGestureHandle1 {
 
     // Callback for receiving signature/gesture progression or identification results
     AirSigManager.OnDeveloperDefinedMatch developerDefined;
