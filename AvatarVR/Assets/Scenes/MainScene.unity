@@ -931,7 +931,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1083858521}
-  - component: {fileID: 1083858522}
+  - component: {fileID: 1083858520}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -939,6 +939,26 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &1083858520
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1083858519}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11959d1bf0b9e1447ae378d1b50fc90d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  airsigManager: {fileID: 2034957574}
+  track: {fileID: 2124195804}
+  textMode: {fileID: 34224290}
+  textResult: {fileID: 1484170295}
+  instruction: {fileID: 477083331}
+  cHeartDown: {fileID: 1145953001}
+  Cube1: {fileID: 4076359334729869249, guid: ffbd582b671c7e24c964da8835eed128, type: 3}
+  Cube2: {fileID: 5608576571003330780, guid: 025c7475e171a4f40aa9716dbf1c54c3, type: 3}
 --- !u!4 &1083858521
 Transform:
   m_ObjectHideFlags: 0
@@ -953,24 +973,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1083858522
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1083858519}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f152a534769a0fc41ad41a3a3ad29fb8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  airsigManager: {fileID: 2034957574}
-  track: {fileID: 2124195804}
-  textMode: {fileID: 34224290}
-  textResult: {fileID: 1484170295}
-  instruction: {fileID: 477083331}
-  cHeartDown: {fileID: 1145953001}
 --- !u!1 &1112548600
 GameObject:
   m_ObjectHideFlags: 0
