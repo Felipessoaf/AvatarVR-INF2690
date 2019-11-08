@@ -12,7 +12,7 @@ EditorBuildSettings:
     path: Assets/GestureRecognition/GestureManager.unity
     guid: 8d91ff346d965b042b02e8f26de1e499
   - enabled: 0
-    path: Assets/GestureRecognition/Sample_TwoHanded.unity
+    path: Assets/Scenes/Sample_TwoHanded.unity
     guid: 47e3eed17990e2c4cba89062a7c0bb49
   - enabled: 0
     path: Assets/GestureRecognition/Sample_Military.unity
