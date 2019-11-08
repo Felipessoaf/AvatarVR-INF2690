@@ -314,4 +314,9 @@ public class AvatarController : MonoBehaviour
         HUDText.text = "Identified a " + GestureRecorder.AvatarGestures.Gancho + " gesture!";
         Instantiate(RockUp, transform.position + transform.forward*5 - transform.up, RockUp.transform.rotation);
     }
+
+    public void Soco()
+    {
+        HUDText.text = "Identified a " + GestureRecorder.AvatarGestures.Soco + " gesture!";
+    }
 }
