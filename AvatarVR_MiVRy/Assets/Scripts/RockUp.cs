@@ -18,11 +18,6 @@ public class RockUp : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            Impulse();
-        }
-
         if (lastYPos > transform.position.y && !falling)
         {
             StartCoroutine(WaitToFall());
@@ -34,8 +29,8 @@ public class RockUp : MonoBehaviour
     void Impulse()
     {
         falling = false;
-        //GetComponent<Rigidbody>().AddForce(Vector3.up * Force, ForceMode.Impulse);
-        GetComponent<Rigidbody>().AddExplosionForce(Force, transform.Find("Explosion Point").position, 1);
+        GetComponent<Rigidbody>().AddForce(Vector3.up * Force, ForceMode.Impulse);
+        //GetComponent<Rigidbody>().AddExplosionForce(Force, transform.Find("Explosion Point").position, 1);
     }
 
     IEnumerator WaitToFall()
