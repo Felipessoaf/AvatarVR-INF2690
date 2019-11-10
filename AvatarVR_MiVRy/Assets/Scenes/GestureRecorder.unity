@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 2138677392}
-  m_IndirectSpecularColor: {r: 0.56928486, g: 0.841531, b: 0.92298305, a: 1}
+  m_IndirectSpecularColor: {r: 0.5809542, g: 0.8428228, b: 0.922919, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -320,6 +320,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e03b0a7c2fa024a4ca102099b7ece3d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  LoadGesturesFile: Sample_TwoHanded_Gestures.dat
   SaveGesturesFile: gestures.dat
   ControllerMotionDistanceThreshold: 1
   ControllerMotionTimeThreshold: 0.01

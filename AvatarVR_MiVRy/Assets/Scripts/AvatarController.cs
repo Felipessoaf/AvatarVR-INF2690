@@ -248,7 +248,7 @@ public class AvatarController : MonoBehaviour
             stroke_index = 0;
         }
         
-        int multigesture_id = gc.identifyGestureCombination();
+        int multigesture_id = gc.identifyGestureCombination() - 4;
 
         // if we arrive here, we have identified a new gesture.
         // Perform the action associated with that gesture.

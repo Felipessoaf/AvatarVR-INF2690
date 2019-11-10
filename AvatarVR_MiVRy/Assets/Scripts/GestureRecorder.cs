@@ -53,6 +53,10 @@ public class GestureRecorder : MonoBehaviour
     public const int Side_Left = 0;
     public const int Side_Right = 1;
 
+    // The file from which to load gestures on startup (left hand).
+    // For example: "Assets/GestureRecognition/Sample_TwoHanded_Gestures.dat"
+    [SerializeField] private string LoadGesturesFile;
+
     // File where to save recorded gestures.
     // For example: "Assets/GestureRecognition/Sample_TwoHanded_MyGestures.dat"
     [SerializeField] private string SaveGesturesFile;
@@ -126,6 +130,22 @@ public class GestureRecorder : MonoBehaviour
         gc.ignoreHeadRotationUpDown = true;
         gc.ignoreHeadRotationTilt = true;
 
+        // Load the default set of gestures.
+#if UNITY_EDITOR
+        string gesture_file_path = "Assets/GestureRecognition";
+#else
+        string gesture_file_path = Application.streamingAssetsPath;
+#endif
+        if (LoadGesturesFile == null)
+        {
+            LoadGesturesFile = "Sample_TwoHanded_Gestures.dat";
+        }
+        if (gc.loadFromFile(gesture_file_path + "/" + LoadGesturesFile) == false)
+        {
+            HUDText.text = "Failed to load sample gesture database file";
+            return;
+        }
+
         if (ControllerMotionDistanceThreshold == 0)
         {
             ControllerMotionDistanceThreshold = 1;
@@ -146,7 +166,8 @@ public class GestureRecorder : MonoBehaviour
         {
             // Show "finished" message.
             double performance = gc.recognitionScore();
-            HUDText.text = "Training finished!\n(Final recognition performance = " + (performance * 100.0) + "%)\n";
+            HUDText.text = "Training finished!\n(Final recognition performance = " + (performance * 100.0) + "%)\n"+ 
+                            "Press 'A'/'X'/Menu button\nto create new gesture.";
             // Set recording_gesture to -1 to indicate normal operation (learning finished).
             recording_gesture = -1;
         }
