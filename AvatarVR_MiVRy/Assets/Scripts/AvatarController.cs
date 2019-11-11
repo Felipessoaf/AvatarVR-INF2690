@@ -152,7 +152,7 @@ public class AvatarController : MonoBehaviour
             RaycastHit hit;
 
             TeleportLine.SetPosition(0, transform.GetChild(0).position + Vector3.down * 0.2f);
-            if (Physics.Raycast(transform.GetChild(0).position, transform.GetChild(0).forward, out hit, 10))
+            if (Physics.Raycast(transform.GetChild(0).position, transform.GetChild(0).GetChild(1).forward, out hit, 10))
             {
                 TeleportLine.SetPosition(1, hit.point);
                 teleportPoint = hit.point;
@@ -160,8 +160,8 @@ public class AvatarController : MonoBehaviour
             }
             else
             {
-                TeleportLine.SetPosition(1, transform.GetChild(0).position + transform.GetChild(0).forward * 30);
-                Debug.Log(transform.GetChild(0).position + transform.GetChild(0).forward * 30);
+                TeleportLine.SetPosition(1, transform.GetChild(0).position + transform.GetChild(0).GetChild(1).forward * 30);
+                //Debug.Log(transform.GetChild(0).position + transform.GetChild(0).forward * 30);
                 canTeleport = false;
             }
         }
