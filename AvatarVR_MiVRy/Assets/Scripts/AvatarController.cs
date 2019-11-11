@@ -33,6 +33,7 @@ using System;
 using System.Runtime.InteropServices;
 using UnityEngine.UI;
 using UnityEngine.XR;
+using UnityEngine.SceneManagement;
 
 
 public class AvatarController : MonoBehaviour
@@ -147,6 +148,11 @@ public class AvatarController : MonoBehaviour
     
     void Update()
     {
+        if(Input.GetKeyDown(KeyCode.R))
+        {
+            SceneManager.LoadScene(0);
+        }
+
         if(teleporting)
         {
             RaycastHit hit;
