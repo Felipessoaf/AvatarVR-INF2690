@@ -162,6 +162,7 @@ public class AvatarController : MonoBehaviour
             {
                 TeleportLine.SetPosition(1, transform.GetChild(0).position + transform.GetChild(0).forward * 30);
                 Debug.Log(transform.GetChild(0).position + transform.GetChild(0).forward * 30);
+                canTeleport = false;
             }
         }
         else
@@ -175,7 +176,7 @@ public class AvatarController : MonoBehaviour
         {
             Gancho();
         }
-        else if(Input.GetKeyDown(KeyCode.S))
+        else if(Input.GetKeyDown(KeyCode.H))
         {
             Soco();
         }
@@ -361,12 +362,13 @@ public class AvatarController : MonoBehaviour
     {
         HUDText.text = "Identified a " + GestureRecorder.AvatarGestures.Soco + " gesture!";
 
-        if(teleporting)
+        if(teleporting && canTeleport)
         {
             //Teleporta
             teleporting = false;
             TeleportAnim.transform.position = transform.GetChild(0).position;
             TeleportAnim.SetTrigger("teleport");
+            canTeleport = false;
         }
         else
         {
