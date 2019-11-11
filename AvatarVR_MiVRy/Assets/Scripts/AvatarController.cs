@@ -354,7 +354,7 @@ public class AvatarController : MonoBehaviour
     public void Gancho()
     {
         HUDText.text = "Identified a " + GestureRecorder.AvatarGestures.Gancho + " gesture!";
-        Instantiate(RockUp, transform.position + transform.forward*5 - transform.up, RockUp.transform.rotation);
+        Instantiate(RockUp, transform.position + transform.forward*2 - transform.up, RockUp.transform.rotation);
         teleporting = false;
     }
 
