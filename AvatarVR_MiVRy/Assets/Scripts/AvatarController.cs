@@ -55,6 +55,7 @@ public class AvatarController : MonoBehaviour
     public GameObject RockUp;
     public LayerMask SocoLayer;
     public LineRenderer TeleportLine;
+    public Animator TeleportAnim;
 
     bool teleporting = false;
     Vector3 teleportPoint;
@@ -363,7 +364,9 @@ public class AvatarController : MonoBehaviour
         if(teleporting)
         {
             //Teleporta
-            StartCoroutine(teleport());
+            teleporting = false;
+            TeleportAnim.transform.position = transform.GetChild(0).position;
+            TeleportAnim.SetTrigger("teleport");
         }
         else
         {
@@ -395,9 +398,9 @@ public class AvatarController : MonoBehaviour
         teleporting = true;
     }
 
-    IEnumerator teleport()
+    public void Teleport()
     {
-        yield return new WaitForSeconds(1f);
         transform.GetChild(0).position = teleportPoint + Vector3.up;
+        TeleportAnim.transform.position = transform.GetChild(0).position;
     }
 }
