@@ -232,10 +232,10 @@ public class Sample_OneHanded : MonoBehaviour
         // If the user is not yet dragging (pressing the trigger) on either controller, he hasn't started a gesture yet.
         if (active_controller == null) {
             // If the user presses either controller's trigger, we start a new gesture.
-            if (trigger_right > 0.8) {
+            if (trigger_right > 0.8 || Input.GetKey(KeyCode.D)) {
                 // Right controller trigger pressed.
                 active_controller = GameObject.Find("Right Hand");
-            } else if (trigger_left > 0.8) {
+            } else if (trigger_left > 0.8 || Input.GetKey(KeyCode.E)) {
                 // Left controller trigger pressed.
                 active_controller = GameObject.Find("Left Hand");
             } else {
@@ -252,7 +252,7 @@ public class Sample_OneHanded : MonoBehaviour
 
         // If we arrive here, the user is currently dragging with one of the controllers.
         // Check if the user is still dragging or if he let go of the trigger button.
-        if (trigger_left > 0.3 || trigger_right > 0.3) {
+        if (trigger_left > 0.3 || trigger_right > 0.3 || Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.E)) {
             // The user is still dragging with the controller: continue the gesture.
             Vector3 p = active_controller.transform.position;
             Quaternion q = active_controller.transform.rotation;

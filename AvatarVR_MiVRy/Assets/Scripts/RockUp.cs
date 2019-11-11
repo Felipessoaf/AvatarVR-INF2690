@@ -8,6 +8,7 @@ public class RockUp : MonoBehaviour
 
     float lastYPos;
     bool falling = false;
+    bool punched = false;
 
     // Start is called before the first frame update
     void Start()
@@ -18,7 +19,7 @@ public class RockUp : MonoBehaviour
 
     private void Update()
     {
-        if (lastYPos > transform.position.y && !falling)
+        if (lastYPos > transform.position.y && !falling && !punched)
         {
             StartCoroutine(WaitToFall());
         }
@@ -38,6 +39,15 @@ public class RockUp : MonoBehaviour
         falling = true;
         GetComponent<Rigidbody>().useGravity = false;
         yield return new WaitForSeconds(1);
+        GetComponentInChildren<Collider>().isTrigger = false;
         GetComponent<Rigidbody>().useGravity = true;
+    }
+
+    public void Punch(Vector3 direction, float force)
+    {
+        punched = true;
+        GetComponentInChildren<Collider>().isTrigger = false;
+        GetComponent<Rigidbody>().useGravity = true;
+        GetComponent<Rigidbody>().AddForce(direction * force, ForceMode.Impulse);
     }
 }

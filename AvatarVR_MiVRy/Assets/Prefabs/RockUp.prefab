@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4877667719061359898}
   - component: {fileID: 4877667719061359899}
   - component: {fileID: 4877667719061359892}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -88,7 +88,7 @@ BoxCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4877667719061359894}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 1, y: 1.3044276, z: 1}
@@ -102,7 +102,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4877667719609411676}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Explosion Point
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -134,7 +134,7 @@ GameObject:
   - component: {fileID: 4877667720743988448}
   - component: {fileID: 4877667720743988449}
   - component: {fileID: 4877667720743988455}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: RockUp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -193,11 +193,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 4877667719061359893}
     m_Modifications:
-    - target: {fileID: -927199367670048503, guid: a2b46b0b6623a4f42a8ea15701ac5223,
-        type: 3}
-      propertyPath: m_Name
-      value: rock1
-      objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: a2b46b0b6623a4f42a8ea15701ac5223,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -252,6 +247,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -927199367670048503, guid: a2b46b0b6623a4f42a8ea15701ac5223,
+        type: 3}
+      propertyPath: m_Name
+      value: rock1
+      objectReference: {fileID: 0}
+    - target: {fileID: -927199367670048503, guid: a2b46b0b6623a4f42a8ea15701ac5223,
+        type: 3}
+      propertyPath: m_Layer
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: -1504981713932161579, guid: a2b46b0b6623a4f42a8ea15701ac5223,
         type: 3}
