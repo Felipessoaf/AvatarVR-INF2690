@@ -54,6 +54,11 @@ public class AvatarController : MonoBehaviour
     [Space]
     public GameObject RockUp;
     public LayerMask SocoLayer;
+    public LineRenderer TeleportLine;
+
+    bool teleporting = false;
+    Vector3 teleportPoint;
+    bool canTeleport;
 
     // Averaged controller motion (distance).
     private double controller_motion_distance_left = 0;
@@ -141,6 +146,30 @@ public class AvatarController : MonoBehaviour
     
     void Update()
     {
+        if(teleporting)
+        {
+            RaycastHit hit;
+
+            TeleportLine.SetPosition(0, transform.GetChild(0).position + Vector3.down * 0.2f);
+            if (Physics.Raycast(transform.GetChild(0).position, transform.GetChild(0).forward, out hit, 10))
+            {
+                TeleportLine.SetPosition(1, hit.point);
+                teleportPoint = hit.point;
+                canTeleport = true;
+            }
+            else
+            {
+                TeleportLine.SetPosition(1, transform.GetChild(0).position + transform.GetChild(0).forward * 30);
+                Debug.Log(transform.GetChild(0).position + transform.GetChild(0).forward * 30);
+            }
+        }
+        else
+        {
+            TeleportLine.SetPosition(0, transform.GetChild(0).position);
+            TeleportLine.SetPosition(1, transform.GetChild(0).position);
+        }
+
+
         if(Input.GetKeyDown(KeyCode.G))
         {
             Gancho();
@@ -151,7 +180,7 @@ public class AvatarController : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.C))
         {
-            Soco();
+            Cavalo();
         }
 
         float trigger_left = Input.GetAxis("LeftControllerTrigger");
@@ -324,33 +353,51 @@ public class AvatarController : MonoBehaviour
     {
         HUDText.text = "Identified a " + GestureRecorder.AvatarGestures.Gancho + " gesture!";
         Instantiate(RockUp, transform.position + transform.forward*5 - transform.up, RockUp.transform.rotation);
+        teleporting = false;
     }
 
     public void Soco()
     {
         HUDText.text = "Identified a " + GestureRecorder.AvatarGestures.Soco + " gesture!";
 
-        RaycastHit hit;
-        Debug.DrawRay(transform.GetChild(0).position + Vector3.up * 0.5f, transform.GetChild(0).forward * 5, Color.green, 5, false);
-        Debug.DrawRay(transform.GetChild(0).position + Vector3.down * 0.5f, transform.GetChild(0).forward * 5, Color.red, 5, false);
-        if (Physics.Raycast(transform.GetChild(0).position + Vector3.up * 0.5f, transform.GetChild(0).forward, out hit, 5, SocoLayer, QueryTriggerInteraction.Collide))
+        if(teleporting)
         {
-            if(hit.transform.GetComponent<RockUp>())
+            //Teleporta
+            StartCoroutine(teleport());
+        }
+        else
+        {
+            RaycastHit hit;
+            Debug.DrawRay(transform.GetChild(0).position + Vector3.up * 0.5f, transform.GetChild(0).forward * 5, Color.green, 5, false);
+            Debug.DrawRay(transform.GetChild(0).position + Vector3.down * 0.5f, transform.GetChild(0).forward * 5, Color.red, 5, false);
+            if (Physics.Raycast(transform.GetChild(0).position + Vector3.up * 0.5f, transform.GetChild(0).forward, out hit, 5, SocoLayer, QueryTriggerInteraction.Collide))
             {
-                hit.transform.GetComponent<RockUp>().Punch(transform.GetChild(0).forward, 10);
+                if (hit.transform.GetComponent<RockUp>())
+                {
+                    hit.transform.GetComponent<RockUp>().Punch(transform.GetChild(0).forward, 10);
+                }
+            }
+            else if (Physics.Raycast(transform.GetChild(0).position + Vector3.down * 0.5f, transform.GetChild(0).forward, out hit, 5, SocoLayer, QueryTriggerInteraction.Collide))
+            {
+                if (hit.transform.GetComponent<RockUp>())
+                {
+                    hit.transform.GetComponent<RockUp>().Punch(transform.GetChild(0).forward, 10);
+                }
             }
         }
-        else if (Physics.Raycast(transform.GetChild(0).position + Vector3.down * 0.5f, transform.GetChild(0).forward, out hit, 5, SocoLayer, QueryTriggerInteraction.Collide))
-        {
-            if (hit.transform.GetComponent<RockUp>())
-            {
-                hit.transform.GetComponent<RockUp>().Punch(transform.GetChild(0).forward, 10);
-            }
-        }
+
+        teleporting = false;
     }
 
     public void Cavalo()
     {
         HUDText.text = "Identified a " + GestureRecorder.AvatarGestures.Cavalo + " gesture!";
+        teleporting = true;
+    }
+
+    IEnumerator teleport()
+    {
+        yield return new WaitForSeconds(1f);
+        transform.GetChild(0).position = teleportPoint + Vector3.up;
     }
 }
