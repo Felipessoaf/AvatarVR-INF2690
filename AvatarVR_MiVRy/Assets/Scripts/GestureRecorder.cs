@@ -33,6 +33,7 @@ using System;
 using System.Runtime.InteropServices;
 using UnityEngine.UI;
 using UnityEngine.XR;
+using VRTK;
 
 
 public class GestureRecorder : MonoBehaviour
@@ -70,6 +71,10 @@ public class GestureRecorder : MonoBehaviour
     // Averaged controller motion (distance).
     private double controller_motion_distance_left = 0;
     private double controller_motion_distance_right = 0;
+
+    [Space]
+    public VRTK_ControllerEvents LeftHandEvents;
+    public VRTK_ControllerEvents RightHandEvents;
 
     // Timestamp when controller motion was last detected (if pressing the trigger button).
     private System.DateTime controller_motion_time_left = System.DateTime.Now;
@@ -158,9 +163,6 @@ public class GestureRecorder : MonoBehaviour
     
     void Update()
     {
-        float trigger_left = Input.GetAxis("LeftControllerTrigger");
-        float trigger_right = Input.GetAxis("RightControllerTrigger");
-
         // If recording_gesture is -3, that means that the AI has recently finished learning a new gesture.
         if (recording_gesture == -3)
         {
@@ -177,10 +179,8 @@ public class GestureRecorder : MonoBehaviour
             // Show "please wait" message
             HUDText.text = "...training...\n(Current recognition performance = " + (last_performance_report * 100.0) + "%)\nPress the 'A'/'X'/Menu button to cancel training.";
             // In this mode, the user may press the "B/Y/menu" button to cancel the learning process.
-            bool button_a_left = Input.GetButton("LeftControllerButtonA");
-            bool button_a_right = Input.GetButton("RightControllerButtonA");
 
-            if (button_a_left || button_a_right)
+            if (LeftHandEvents.buttonOnePressed || RightHandEvents.buttonOnePressed)
             {
                 // Button pressed: stop the learning process.
                 gc.stopTraining();
@@ -194,11 +194,8 @@ public class GestureRecorder : MonoBehaviour
         // If recording_gesture is -1, we're currently not recording a new gesture.
         if (recording_gesture == -1)
         {
-            bool button_a_left = Input.GetButton("LeftControllerButtonA");
-            bool button_a_right = Input.GetButton("RightControllerButtonA");
-
             // In this mode, the user can press button A/X to create a new gesture
-            if (button_a_left || button_a_right)
+            if (LeftHandEvents.buttonOnePressed || RightHandEvents.buttonOnePressed)
             {
                 int recording_gesture_left = gc.createGesture(Side_Left, "custom gesture " + (gc.numberOfGestures(Side_Left) + 1));
                 int recording_gesture_right = gc.createGesture(Side_Right, "custom gesture " + (gc.numberOfGestures(Side_Right) + 1));
@@ -212,24 +209,24 @@ public class GestureRecorder : MonoBehaviour
 
         
         // If the user presses either controller's trigger, we start a new gesture.
-        if (trigger_pressed_left == false && trigger_left > 0.8)
+        if (trigger_pressed_left == false && LeftHandEvents.triggerPressed)
         { 
             // Controller trigger pressed.
             trigger_pressed_left = true;
-            GameObject hmd = GameObject.Find("TrackingSpace");
-            Vector3 hmd_p = hmd.transform.localPosition;
-            Quaternion hmd_q = hmd.transform.localRotation;
+            Transform hmd = VRTK_DeviceFinder.HeadsetTransform(); //GameObject.Find("TrackingSpace");
+            Vector3 hmd_p = hmd.localPosition;
+            Quaternion hmd_q = hmd.localRotation;
             gc.startStroke(Side_Left, hmd_p, hmd_q, recording_gesture);
             gesture_started = true;
         }
 
-        if (trigger_pressed_right == false && trigger_right > 0.8)
+        if (trigger_pressed_right == false && RightHandEvents.triggerPressed)
         {
             // Controller trigger pressed.
             trigger_pressed_right = true;
-            GameObject hmd = GameObject.Find("TrackingSpace");
-            Vector3 hmd_p = hmd.transform.localPosition;
-            Quaternion hmd_q = hmd.transform.localRotation;
+            Transform hmd = VRTK_DeviceFinder.HeadsetTransform(); //GameObject.Find("TrackingSpace");
+            Vector3 hmd_p = hmd.localPosition;
+            Quaternion hmd_q = hmd.localRotation;
             gc.startStroke(Side_Right, hmd_p, hmd_q, recording_gesture);
             gesture_started = true;
         }
@@ -243,7 +240,7 @@ public class GestureRecorder : MonoBehaviour
         // If we arrive here, the user is currently dragging with one of the controllers.
         if (trigger_pressed_left == true)
         {
-            if (trigger_left < 0.3 && controller_motion_distance_left < ControllerMotionDistanceThreshold && System.DateTime.Now.Subtract(controller_motion_time_left).Seconds > ControllerMotionTimeThreshold)
+            if (!LeftHandEvents.triggerPressed && controller_motion_distance_left < ControllerMotionDistanceThreshold && System.DateTime.Now.Subtract(controller_motion_time_left).Seconds > ControllerMotionTimeThreshold)
             {
                 // User let go of a trigger and held controller still
                 gc.endStroke(Side_Left);
@@ -252,8 +249,8 @@ public class GestureRecorder : MonoBehaviour
             else
             {
                 // User still dragging or still moving after trigger pressed
-                GameObject left_hand = GameObject.Find("LeftHandAnchor");
-                gc.contdStroke(Side_Left, left_hand.transform.position, left_hand.transform.rotation);
+                GameObject left_hand = VRTK_DeviceFinder.GetControllerLeftHand();
+                gc.contdStroke(Side_Left, left_hand.transform.position, Quaternion.identity); // left_hand.transform.rotation);
 
                 // Show the stroke by instatiating new objects
                 addToStrokeTrail(left_hand.transform.position);
@@ -271,7 +268,7 @@ public class GestureRecorder : MonoBehaviour
 
         if (trigger_pressed_right == true)
         {
-            if (trigger_right < 0.3 && controller_motion_distance_right < ControllerMotionDistanceThreshold && System.DateTime.Now.Subtract(controller_motion_time_right).Seconds > ControllerMotionTimeThreshold)
+            if (!RightHandEvents.triggerPressed && controller_motion_distance_right < ControllerMotionDistanceThreshold && System.DateTime.Now.Subtract(controller_motion_time_right).Seconds > ControllerMotionTimeThreshold)
             {
                 // User let go of a trigger and held controller still
                 gc.endStroke(Side_Right);
@@ -280,8 +277,8 @@ public class GestureRecorder : MonoBehaviour
             else
             {
                 // User still dragging or still moving after trigger pressed
-                GameObject right_hand = GameObject.Find("RightHandAnchor");
-                gc.contdStroke(Side_Right, right_hand.transform.position, right_hand.transform.rotation);
+                GameObject right_hand = VRTK_DeviceFinder.GetControllerRightHand();
+                gc.contdStroke(Side_Right, right_hand.transform.position, Quaternion.identity); // right_hand.transform.rotation);
 
                 // Show the stroke by instatiating new objects
                 addToStrokeTrail(right_hand.transform.position);
@@ -312,13 +309,11 @@ public class GestureRecorder : MonoBehaviour
             stroke_index = 0;
         }
         
-        int multigesture_id = gc.identifyGestureCombination();
-        
         // If we are currently recording samples for a custom gesture, check if we have recorded enough samples yet.
         if (recording_gesture >= 0)
         {
             // Currently recording samples for a custom gesture - check how many we have recorded so far.
-            int num_samples = gc.getGestureNumberOfSamples(Side_Left, recording_gesture);
+            int num_samples = Mathf.Max(gc.getGestureNumberOfSamples(Side_Left, recording_gesture), gc.getGestureNumberOfSamples(Side_Right, recording_gesture));
             if (num_samples < 25)
             {
                 // Not enough samples recorded yet.
