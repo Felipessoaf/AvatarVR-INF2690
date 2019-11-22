@@ -177,12 +177,12 @@ public class AvatarController : MonoBehaviour
         
         // If the user presses either controller's trigger, we start a new gesture.
         if (trigger_pressed_left == false && LeftHandEvents.triggerPressed)
-        { 
+        {
             // Controller trigger pressed.
             trigger_pressed_left = true;
-            GameObject hmd = GameObject.Find("TrackingSpace");
-            Vector3 hmd_p = hmd.transform.localPosition;
-            Quaternion hmd_q = Quaternion.identity; //hmd.transform.localRotation;
+            Transform hmd = VRTK_DeviceFinder.HeadsetTransform(); //GameObject.Find("TrackingSpace");
+            Vector3 hmd_p = hmd.localPosition;
+            Quaternion hmd_q = hmd.localRotation;
             gc.startStroke(Side_Left, hmd_p, hmd_q, recording_gesture);
             gesture_started = true;
         }
@@ -191,9 +191,9 @@ public class AvatarController : MonoBehaviour
         {
             // Controller trigger pressed.
             trigger_pressed_right = true;
-            GameObject hmd = GameObject.Find("TrackingSpace");
-            Vector3 hmd_p = hmd.transform.localPosition;
-            Quaternion hmd_q = Quaternion.identity; //hmd.transform.localRotation;
+            Transform hmd = VRTK_DeviceFinder.HeadsetTransform(); //GameObject.Find("TrackingSpace");
+            Vector3 hmd_p = hmd.localPosition;
+            Quaternion hmd_q = hmd.localRotation;
             gc.startStroke(Side_Right, hmd_p, hmd_q, recording_gesture);
             gesture_started = true;
         }
@@ -327,6 +327,7 @@ public class AvatarController : MonoBehaviour
     public void addToStrokeTrail(Vector3 p)
     {
         GameObject star_instance = Instantiate(GameObject.Find("star"));
+        star_instance.SetActive(true);
         GameObject star = new GameObject("stroke_" + stroke_index++);
         star_instance.name = star.name + "_instance";
         star_instance.transform.SetParent(star.transform, false);

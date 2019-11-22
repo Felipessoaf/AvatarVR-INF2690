@@ -354,8 +354,8 @@ MonoBehaviour:
   SocoLayer:
     serializedVersion: 2
     m_Bits: 512
-  LeftHandEvents: {fileID: 0}
-  RightHandEvents: {fileID: 0}
+  LeftHandEvents: {fileID: 606305441}
+  RightHandEvents: {fileID: 1364247799}
 --- !u!4 &35379537
 Transform:
   m_ObjectHideFlags: 0
