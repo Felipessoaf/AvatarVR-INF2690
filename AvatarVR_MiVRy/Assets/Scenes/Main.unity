@@ -342,6 +342,7 @@ MonoBehaviour:
     m_Bits: 512
   LeftHandEvents: {fileID: 606305441}
   RightHandEvents: {fileID: 1364247799}
+  teleportPointer: {fileID: 0}
 --- !u!4 &35379537
 Transform:
   m_ObjectHideFlags: 0
@@ -2157,7 +2158,7 @@ MonoBehaviour:
   controllerEvents: {fileID: 0}
   interactUse: {fileID: 0}
   customOrigin: {fileID: 0}
-  TeleportAnim: {fileID: 0}
+  TeleportAnim: {fileID: 1629658134}
   controller: {fileID: 0}
 --- !u!114 &606305441
 MonoBehaviour:
@@ -4664,7 +4665,7 @@ MonoBehaviour:
   controllerEvents: {fileID: 0}
   interactUse: {fileID: 0}
   customOrigin: {fileID: 0}
-  TeleportAnim: {fileID: 0}
+  TeleportAnim: {fileID: 1629658134}
   controller: {fileID: 0}
 --- !u!114 &1364247799
 MonoBehaviour:
