@@ -65,6 +65,8 @@ namespace VRTK
         [Tooltip("A custom transform to use as the origin of the pointer. If no pointer origin transform is provided then the transform the script is attached to is used.")]
         public Transform customOrigin;
 
+        public Animator TeleportAnim;
+
         [Header("Obsolete Settings")]
 
         [System.Obsolete("`VRTK_Pointer.controller` has been replaced with `VRTK_Pointer.controllerEvents`. This parameter will be removed in a future version of VRTK.")]
@@ -635,11 +637,18 @@ namespace VRTK
                 AttemptUseOnSet(pointerRendererDestinationHit.transform);
                 if (pointerRendererDestinationHit.transform && IsPointerActive() && pointerRenderer.ValidPlayArea() && !PointerActivatesUseAction(pointerInteractableObject) && pointerRenderer.IsValidCollision())
                 {
-                    ResetHoverSelectionTimer(pointerRendererDestinationHit.collider);
-                    ResetSelectionTimer();
-                    OnDestinationMarkerSet(SetDestinationMarkerEvent(pointerRendererDestinationHit.distance, pointerRendererDestinationHit.transform, pointerRendererDestinationHit, pointerRendererDestinationHit.point, controllerReference, false, GetCursorRotation()));
+                    TeleportAnim.SetTrigger("teleport");
+                    FindObjectOfType<AvatarController>().teleportPointer = this;
                 }
             }
+        }
+
+        public void FinishTeleport()
+        {
+            RaycastHit pointerRendererDestinationHit = pointerRenderer.GetDestinationHit();
+            ResetHoverSelectionTimer(pointerRendererDestinationHit.collider);
+            ResetSelectionTimer();
+            OnDestinationMarkerSet(SetDestinationMarkerEvent(pointerRendererDestinationHit.distance, pointerRendererDestinationHit.transform, pointerRendererDestinationHit, pointerRendererDestinationHit.point, controllerReference, false, GetCursorRotation()));
         }
 
         protected virtual bool CanResetActivationState(bool givenState)

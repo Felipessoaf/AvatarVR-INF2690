@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TeleportAnim : MonoBehaviour
+public class TeleportAnimEvent : MonoBehaviour
 {
     public void Teleport()
     {
-        //GetComponentInParent<AvatarController>().Teleport();
+        GetComponentInParent<AvatarController>().Teleport();
     }
 }

@@ -61,6 +61,9 @@ public class AvatarController : MonoBehaviour
     public VRTK_ControllerEvents LeftHandEvents;
     public VRTK_ControllerEvents RightHandEvents;
 
+    [HideInInspector]
+    public VRTK_Pointer teleportPointer;
+
     // Averaged controller motion (distance).
     private double controller_motion_distance_left = 0;
     private double controller_motion_distance_right = 0;
@@ -159,7 +162,12 @@ public class AvatarController : MonoBehaviour
     
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.R))
+        if(VRTK_DeviceFinder.HeadsetTransform())
+        {
+            transform.position = VRTK_DeviceFinder.HeadsetTransform().position;
+        }
+
+        if (Input.GetKeyDown(KeyCode.R))
         {
             SceneManager.LoadScene(0);
         }
@@ -414,5 +422,10 @@ public class AvatarController : MonoBehaviour
     public void Cavalo()
     {
         HUDText.text = "Identified a " + GestureRecorder.AvatarGestures.Cavalo + " gesture!";
+    }
+
+    public void Teleport()
+    {
+        teleportPointer.FinishTeleport();
     }
 }
