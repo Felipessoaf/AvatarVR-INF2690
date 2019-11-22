@@ -64,6 +64,8 @@ public class AvatarController : MonoBehaviour
     [HideInInspector]
     public VRTK_Pointer teleportPointer;
 
+    bool teleporting = false;
+
     // Averaged controller motion (distance).
     private double controller_motion_distance_left = 0;
     private double controller_motion_distance_right = 0;
@@ -400,21 +402,28 @@ public class AvatarController : MonoBehaviour
     {
         HUDText.text = "Identified a " + GestureRecorder.AvatarGestures.Soco + " gesture!";
 
-        RaycastHit hit;
-        Debug.DrawRay(transform.GetChild(0).position + Vector3.up * 0.5f, transform.GetChild(0).forward * 5, Color.green, 5, false);
-        Debug.DrawRay(transform.GetChild(0).position + Vector3.down * 0.5f, transform.GetChild(0).forward * 5, Color.red, 5, false);
-        if (Physics.Raycast(transform.GetChild(0).position + Vector3.up * 0.5f, transform.GetChild(0).forward, out hit, 5, SocoLayer, QueryTriggerInteraction.Collide))
+        if(teleporting)
         {
-            if (hit.transform.GetComponent<RockUp>())
-            {
-                hit.transform.GetComponent<RockUp>().Punch(transform.GetChild(0).forward, 10);
-            }
+            LeftHandEvents.OnTouchpadReleased(LeftHandEvents.SetControllerEvent(ref LeftHandEvents.touchpadPressed, false, 0f));
         }
-        else if (Physics.Raycast(transform.GetChild(0).position + Vector3.down * 0.5f, transform.GetChild(0).forward, out hit, 5, SocoLayer, QueryTriggerInteraction.Collide))
+        else
         {
-            if (hit.transform.GetComponent<RockUp>())
+            RaycastHit hit;
+            Debug.DrawRay(transform.GetChild(0).position + Vector3.up * 0.5f, transform.GetChild(0).forward * 5, Color.green, 5, false);
+            Debug.DrawRay(transform.GetChild(0).position + Vector3.down * 0.5f, transform.GetChild(0).forward * 5, Color.red, 5, false);
+            if (Physics.Raycast(transform.GetChild(0).position + Vector3.up * 0.5f, transform.GetChild(0).forward, out hit, 5, SocoLayer, QueryTriggerInteraction.Collide))
             {
-                hit.transform.GetComponent<RockUp>().Punch(transform.GetChild(0).forward, 10);
+                if (hit.transform.GetComponent<RockUp>())
+                {
+                    hit.transform.GetComponent<RockUp>().Punch(transform.GetChild(0).forward, 10);
+                }
+            }
+            else if (Physics.Raycast(transform.GetChild(0).position + Vector3.down * 0.5f, transform.GetChild(0).forward, out hit, 5, SocoLayer, QueryTriggerInteraction.Collide))
+            {
+                if (hit.transform.GetComponent<RockUp>())
+                {
+                    hit.transform.GetComponent<RockUp>().Punch(transform.GetChild(0).forward, 10);
+                }
             }
         }
     }
@@ -422,6 +431,9 @@ public class AvatarController : MonoBehaviour
     public void Cavalo()
     {
         HUDText.text = "Identified a " + GestureRecorder.AvatarGestures.Cavalo + " gesture!";
+
+        LeftHandEvents.OnTouchpadPressed(LeftHandEvents.SetControllerEvent(ref LeftHandEvents.touchpadPressed, true, 1f));
+        teleporting = true;
     }
 
     public void Teleport()
