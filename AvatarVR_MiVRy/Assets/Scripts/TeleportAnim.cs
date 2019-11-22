@@ -6,6 +6,6 @@ public class TeleportAnim : MonoBehaviour
 {
     public void Teleport()
     {
-        GetComponentInParent<AvatarController>().Teleport();
+        //GetComponentInParent<AvatarController>().Teleport();
     }
 }

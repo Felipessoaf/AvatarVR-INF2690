@@ -329,7 +329,7 @@ GameObject:
   - component: {fileID: 35379537}
   - component: {fileID: 35379536}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: AvatarController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -354,8 +354,8 @@ MonoBehaviour:
   SocoLayer:
     serializedVersion: 2
     m_Bits: 512
-  TeleportLine: {fileID: 0}
-  TeleportAnim: {fileID: 1629658134}
+  LeftHandEvents: {fileID: 0}
+  RightHandEvents: {fileID: 0}
 --- !u!4 &35379537
 Transform:
   m_ObjectHideFlags: 0

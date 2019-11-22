@@ -34,6 +34,7 @@ using System.Runtime.InteropServices;
 using UnityEngine.UI;
 using UnityEngine.XR;
 using UnityEngine.SceneManagement;
+using VRTK;
 
 
 public class AvatarController : MonoBehaviour
@@ -55,12 +56,10 @@ public class AvatarController : MonoBehaviour
     [Space]
     public GameObject RockUp;
     public LayerMask SocoLayer;
-    public LineRenderer TeleportLine;
-    public Animator TeleportAnim;
 
-    bool teleporting = false;
-    Vector3 teleportPoint;
-    bool canTeleport;
+    [Space]
+    public VRTK_ControllerEvents LeftHandEvents;
+    public VRTK_ControllerEvents RightHandEvents;
 
     // Averaged controller motion (distance).
     private double controller_motion_distance_left = 0;
@@ -101,6 +100,16 @@ public class AvatarController : MonoBehaviour
 
     // Handle to this object/script instance, so that callbacks from the plug-in arrive at the correct instance.
     GCHandle me;
+
+    private void OnEnable()
+    {
+        
+    }
+
+    private void OnDisable()
+    {
+        
+    }
 
     // Initialization:
     void Start ()
@@ -153,31 +162,6 @@ public class AvatarController : MonoBehaviour
             SceneManager.LoadScene(0);
         }
 
-        if(teleporting)
-        {
-            RaycastHit hit;
-
-            TeleportLine.SetPosition(0, transform.GetChild(0).position + Vector3.down * 0.2f);
-            if (Physics.Raycast(transform.GetChild(0).position, transform.GetChild(0).GetChild(1).forward, out hit, 10))
-            {
-                TeleportLine.SetPosition(1, hit.point);
-                teleportPoint = hit.point;
-                canTeleport = true;
-            }
-            else
-            {
-                TeleportLine.SetPosition(1, transform.GetChild(0).position + transform.GetChild(0).GetChild(1).forward * 30);
-                //Debug.Log(transform.GetChild(0).position + transform.GetChild(0).forward * 30);
-                canTeleport = false;
-            }
-        }
-        else
-        {
-            TeleportLine.SetPosition(0, transform.GetChild(0).position);
-            TeleportLine.SetPosition(1, transform.GetChild(0).position);
-        }
-
-
         if(Input.GetKeyDown(KeyCode.G))
         {
             Gancho();
@@ -190,29 +174,26 @@ public class AvatarController : MonoBehaviour
         {
             Cavalo();
         }
-
-        float trigger_left = Input.GetAxis("LeftControllerTrigger");
-        float trigger_right = Input.GetAxis("RightControllerTrigger");
         
         // If the user presses either controller's trigger, we start a new gesture.
-        if (trigger_pressed_left == false && trigger_left > 0.8)
+        if (trigger_pressed_left == false && LeftHandEvents.triggerPressed)
         { 
             // Controller trigger pressed.
             trigger_pressed_left = true;
             GameObject hmd = GameObject.Find("TrackingSpace");
             Vector3 hmd_p = hmd.transform.localPosition;
-            Quaternion hmd_q = hmd.transform.localRotation;
+            Quaternion hmd_q = Quaternion.identity; //hmd.transform.localRotation;
             gc.startStroke(Side_Left, hmd_p, hmd_q, recording_gesture);
             gesture_started = true;
         }
 
-        if (trigger_pressed_right == false && trigger_right > 0.8)
+        if (trigger_pressed_right == false && RightHandEvents.triggerPressed)
         {
             // Controller trigger pressed.
             trigger_pressed_right = true;
             GameObject hmd = GameObject.Find("TrackingSpace");
             Vector3 hmd_p = hmd.transform.localPosition;
-            Quaternion hmd_q = hmd.transform.localRotation;
+            Quaternion hmd_q = Quaternion.identity; //hmd.transform.localRotation;
             gc.startStroke(Side_Right, hmd_p, hmd_q, recording_gesture);
             gesture_started = true;
         }
@@ -226,16 +207,17 @@ public class AvatarController : MonoBehaviour
         // If we arrive here, the user is currently dragging with one of the controllers.
         if (trigger_pressed_left == true)
         {
-            if (trigger_left < 0.3 && controller_motion_distance_left < ControllerMotionDistanceThreshold && System.DateTime.Now.Subtract(controller_motion_time_left).Seconds > ControllerMotionTimeThreshold)
+            if (!LeftHandEvents.triggerPressed && controller_motion_distance_left < ControllerMotionDistanceThreshold && System.DateTime.Now.Subtract(controller_motion_time_left).Seconds > ControllerMotionTimeThreshold)
             {
                 // User let go of a trigger and held controller still
                 gc.endStroke(Side_Left);
                 trigger_pressed_left = false;
-            } else
+            }
+            else
             {
                 // User still dragging or still moving after trigger pressed
-                GameObject left_hand = GameObject.Find("LeftHandAnchor");
-                gc.contdStroke(Side_Left, left_hand.transform.position, left_hand.transform.rotation);
+                GameObject left_hand = VRTK_DeviceFinder.GetControllerLeftHand();
+                gc.contdStroke(Side_Left, left_hand.transform.position, Quaternion.identity); // left_hand.transform.rotation);
 
                 // Show the stroke by instatiating new objects
                 addToStrokeTrail(left_hand.transform.position);
@@ -253,7 +235,7 @@ public class AvatarController : MonoBehaviour
 
         if (trigger_pressed_right == true)
         {
-            if (trigger_right < 0.3 && controller_motion_distance_right < ControllerMotionDistanceThreshold && System.DateTime.Now.Subtract(controller_motion_time_right).Seconds > ControllerMotionTimeThreshold)
+            if (!RightHandEvents.triggerPressed && controller_motion_distance_right < ControllerMotionDistanceThreshold && System.DateTime.Now.Subtract(controller_motion_time_right).Seconds > ControllerMotionTimeThreshold)
             {
                 // User let go of a trigger and held controller still
                 gc.endStroke(Side_Right);
@@ -262,8 +244,8 @@ public class AvatarController : MonoBehaviour
             else
             {
                 // User still dragging or still moving after trigger pressed
-                GameObject right_hand = GameObject.Find("RightHandAnchor");
-                gc.contdStroke(Side_Right, right_hand.transform.position, right_hand.transform.rotation);
+                GameObject right_hand = VRTK_DeviceFinder.GetControllerRightHand();
+                gc.contdStroke(Side_Right, right_hand.transform.position, Quaternion.identity); // right_hand.transform.rotation);
 
                 // Show the stroke by instatiating new objects
                 addToStrokeTrail(right_hand.transform.position);
@@ -361,54 +343,33 @@ public class AvatarController : MonoBehaviour
     {
         HUDText.text = "Identified a " + GestureRecorder.AvatarGestures.Gancho + " gesture!";
         Instantiate(RockUp, transform.position + transform.forward*2 - transform.up, RockUp.transform.rotation);
-        teleporting = false;
     }
 
     public void Soco()
     {
         HUDText.text = "Identified a " + GestureRecorder.AvatarGestures.Soco + " gesture!";
 
-        if(teleporting && canTeleport)
+        RaycastHit hit;
+        Debug.DrawRay(transform.GetChild(0).position + Vector3.up * 0.5f, transform.GetChild(0).forward * 5, Color.green, 5, false);
+        Debug.DrawRay(transform.GetChild(0).position + Vector3.down * 0.5f, transform.GetChild(0).forward * 5, Color.red, 5, false);
+        if (Physics.Raycast(transform.GetChild(0).position + Vector3.up * 0.5f, transform.GetChild(0).forward, out hit, 5, SocoLayer, QueryTriggerInteraction.Collide))
         {
-            //Teleporta
-            teleporting = false;
-            TeleportAnim.transform.position = transform.GetChild(0).position;
-            TeleportAnim.SetTrigger("teleport");
-            canTeleport = false;
-        }
-        else
-        {
-            RaycastHit hit;
-            Debug.DrawRay(transform.GetChild(0).position + Vector3.up * 0.5f, transform.GetChild(0).forward * 5, Color.green, 5, false);
-            Debug.DrawRay(transform.GetChild(0).position + Vector3.down * 0.5f, transform.GetChild(0).forward * 5, Color.red, 5, false);
-            if (Physics.Raycast(transform.GetChild(0).position + Vector3.up * 0.5f, transform.GetChild(0).forward, out hit, 5, SocoLayer, QueryTriggerInteraction.Collide))
+            if (hit.transform.GetComponent<RockUp>())
             {
-                if (hit.transform.GetComponent<RockUp>())
-                {
-                    hit.transform.GetComponent<RockUp>().Punch(transform.GetChild(0).forward, 10);
-                }
-            }
-            else if (Physics.Raycast(transform.GetChild(0).position + Vector3.down * 0.5f, transform.GetChild(0).forward, out hit, 5, SocoLayer, QueryTriggerInteraction.Collide))
-            {
-                if (hit.transform.GetComponent<RockUp>())
-                {
-                    hit.transform.GetComponent<RockUp>().Punch(transform.GetChild(0).forward, 10);
-                }
+                hit.transform.GetComponent<RockUp>().Punch(transform.GetChild(0).forward, 10);
             }
         }
-
-        teleporting = false;
+        else if (Physics.Raycast(transform.GetChild(0).position + Vector3.down * 0.5f, transform.GetChild(0).forward, out hit, 5, SocoLayer, QueryTriggerInteraction.Collide))
+        {
+            if (hit.transform.GetComponent<RockUp>())
+            {
+                hit.transform.GetComponent<RockUp>().Punch(transform.GetChild(0).forward, 10);
+            }
+        }
     }
 
     public void Cavalo()
     {
         HUDText.text = "Identified a " + GestureRecorder.AvatarGestures.Cavalo + " gesture!";
-        teleporting = true;
-    }
-
-    public void Teleport()
-    {
-        transform.GetChild(0).position = teleportPoint + Vector3.up;
-        TeleportAnim.transform.position = transform.GetChild(0).position;
     }
 }
