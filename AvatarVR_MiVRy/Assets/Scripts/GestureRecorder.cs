@@ -124,9 +124,9 @@ public class GestureRecorder : MonoBehaviour
         // Set the welcome message.
         HUDText = GameObject.Find("HUDText").GetComponent<Text>();
         HUDText.text = "Cena para gravar os nossos gestures\n"
-                      + "Press triggers of both controllers to record a gesture,\n"
-                      + "and hold the end position for " + ControllerMotionTimeThreshold + "s.\n"
-                      + "Press 'A'/'X'/Menu button\nto create new gesture.";
+                      + "Para gravar, aperte o trigger do controle desejado ou dos dois,\n"
+                      + "e mantenha a posição final por " + ControllerMotionTimeThreshold + "s.\n"
+                      + "Pressione botao 1 para criar um novo gesture.";
 
         me = GCHandle.Alloc(this);
 

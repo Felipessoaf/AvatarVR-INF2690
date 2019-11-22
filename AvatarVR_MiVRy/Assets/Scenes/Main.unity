@@ -347,7 +347,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2d5f3145b4a71046b0dcb86c827241c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LoadGesturesFile: gestures.dat
+  LoadGesturesFile: testGestures.dat
   ControllerMotionDistanceThreshold: 1
   ControllerMotionTimeThreshold: 0.01
   RockUp: {fileID: 4877667720743988450, guid: dc06438e7b6a9b942908778347fab7aa, type: 3}
