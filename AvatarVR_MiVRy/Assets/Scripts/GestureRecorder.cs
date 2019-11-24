@@ -87,8 +87,8 @@ public class GestureRecorder : MonoBehaviour
     // Whether the user is currently pressing the contoller trigger.
     private bool trigger_pressed_left = false;
     private bool trigger_pressed_right = false;
-    private bool fake_trigger_pressed_left = false;
-    private bool fake_trigger_pressed_right = false;
+    //private bool fake_trigger_pressed_left = false;
+    //private bool fake_trigger_pressed_right = false;
 
     // Wether a gesture was already started
     private bool gesture_started = false;
@@ -248,37 +248,37 @@ public class GestureRecorder : MonoBehaviour
                 gc.endStroke(Side_Left);
                 trigger_pressed_left = false;
 
-                if (fake_trigger_pressed_right)
-                {
-                    fake_trigger_pressed_right = false;
-                    gc.endStroke(Side_Right);
-                }
+                //if (fake_trigger_pressed_right)
+                //{
+                //    fake_trigger_pressed_right = false;
+                //    gc.endStroke(Side_Right);
+                //}
             }
             else
             {
                 // User still dragging or still moving after trigger pressed
                 GameObject left_hand = VRTK_DeviceFinder.GetControllerLeftHand();
-                gc.contdStroke(Side_Left, left_hand.transform.position, Quaternion.identity); // left_hand.transform.rotation);
+                gc.contdStroke(Side_Left, left_hand.transform.localPosition, Quaternion.identity); // left_hand.transform.rotation);
 
-                if (fake_trigger_pressed_right && !trigger_pressed_right)
-                {
-                    gc.contdStroke(Side_Left, Vector3.zero, Quaternion.identity);
-                }
+                //if (fake_trigger_pressed_right && !trigger_pressed_right)
+                //{
+                //    gc.contdStroke(Side_Left, Vector3.zero, Quaternion.identity);
+                //}
 
-                if (!trigger_pressed_right && !fake_trigger_pressed_right)
-                {
-                    Transform hmd = VRTK_DeviceFinder.HeadsetTransform();
-                    Vector3 hmd_p = hmd.localPosition;
-                    Quaternion hmd_q = hmd.localRotation;
-                    gc.startStroke(Side_Right, hmd_p, hmd_q, recording_gesture);
-                    fake_trigger_pressed_right = true;
-                }
+                //if (!trigger_pressed_right && !fake_trigger_pressed_right)
+                //{
+                //    Transform hmd = VRTK_DeviceFinder.HeadsetTransform();
+                //    Vector3 hmd_p = hmd.localPosition;
+                //    Quaternion hmd_q = hmd.localRotation;
+                //    gc.startStroke(Side_Right, hmd_p, hmd_q, recording_gesture);
+                //    fake_trigger_pressed_right = true;
+                //}
 
                 // Show the stroke by instatiating new objects
                 addToStrokeTrail(left_hand.transform.position);
 
-                float contoller_motion = (left_hand.transform.position - controller_motion_last_left).magnitude;
-                controller_motion_last_left = left_hand.transform.position;
+                float contoller_motion = (left_hand.transform.localPosition - controller_motion_last_left).magnitude;
+                controller_motion_last_left = left_hand.transform.localPosition;
                 controller_motion_distance_left = (controller_motion_distance_left + contoller_motion) * 0.5f; // averaging
 
                 if (controller_motion_distance_left > ControllerMotionDistanceThreshold)
@@ -296,37 +296,37 @@ public class GestureRecorder : MonoBehaviour
                 gc.endStroke(Side_Right);
                 trigger_pressed_right = false;
 
-                if (fake_trigger_pressed_left)
-                {
-                    fake_trigger_pressed_left = false;
-                    gc.endStroke(Side_Left);
-                }
+                //if (fake_trigger_pressed_left)
+                //{
+                //    fake_trigger_pressed_left = false;
+                //    gc.endStroke(Side_Left);
+                //}
             }
             else
             {
                 // User still dragging or still moving after trigger pressed
                 GameObject right_hand = VRTK_DeviceFinder.GetControllerRightHand();
-                gc.contdStroke(Side_Right, right_hand.transform.position, Quaternion.identity); // right_hand.transform.rotation);
+                gc.contdStroke(Side_Right, right_hand.transform.localPosition, Quaternion.identity); // right_hand.transform.rotation);
                 
-                if (fake_trigger_pressed_left && !trigger_pressed_left)
-                {
-                    gc.contdStroke(Side_Left, Vector3.zero, Quaternion.identity);
-                }
+                //if (fake_trigger_pressed_left && !trigger_pressed_left)
+                //{
+                //    gc.contdStroke(Side_Left, Vector3.zero, Quaternion.identity);
+                //}
 
-                if (!trigger_pressed_left && !fake_trigger_pressed_left)
-                {
-                    Transform hmd = VRTK_DeviceFinder.HeadsetTransform();
-                    Vector3 hmd_p = hmd.localPosition;
-                    Quaternion hmd_q = hmd.localRotation;
-                    gc.startStroke(Side_Left, hmd_p, hmd_q, recording_gesture);
-                    fake_trigger_pressed_left = true;
-                }
+                //if (!trigger_pressed_left && !fake_trigger_pressed_left)
+                //{
+                //    Transform hmd = VRTK_DeviceFinder.HeadsetTransform();
+                //    Vector3 hmd_p = hmd.localPosition;
+                //    Quaternion hmd_q = hmd.localRotation;
+                //    gc.startStroke(Side_Left, hmd_p, hmd_q, recording_gesture);
+                //    fake_trigger_pressed_left = true;
+                //}
 
                 // Show the stroke by instatiating new objects
                 addToStrokeTrail(right_hand.transform.position);
 
-                float contoller_motion = (right_hand.transform.position - controller_motion_last_right).magnitude;
-                controller_motion_last_right = right_hand.transform.position;
+                float contoller_motion = (right_hand.transform.localPosition - controller_motion_last_right).magnitude;
+                controller_motion_last_right = right_hand.transform.localPosition;
                 controller_motion_distance_right = (controller_motion_distance_right + contoller_motion) * 0.5f; // averaging
 
                 if (controller_motion_distance_right > ControllerMotionDistanceThreshold)
@@ -355,7 +355,7 @@ public class GestureRecorder : MonoBehaviour
         if (recording_gesture >= 0)
         {
             // Currently recording samples for a custom gesture - check how many we have recorded so far.
-            int num_samples = Mathf.Max(gc.getGestureNumberOfSamples(Side_Left, recording_gesture), gc.getGestureNumberOfSamples(Side_Right, recording_gesture));
+            int num_samples = gc.getGestureNumberOfSamples(Side_Left, recording_gesture); //Mathf.Max(gc.getGestureNumberOfSamples(Side_Left, recording_gesture), gc.getGestureNumberOfSamples(Side_Right, recording_gesture));
             if (num_samples < 25)
             {
                 // Not enough samples recorded yet.
