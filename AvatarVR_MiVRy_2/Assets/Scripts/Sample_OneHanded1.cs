@@ -34,8 +34,10 @@ using System.IO;
 using System.Runtime.InteropServices;
 using AOT;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using UnityEngine.XR;
 using UnityEngine.Networking;
+using VRTK;
 
 public class Sample_OneHanded1 : MonoBehaviour
 {
@@ -46,6 +48,10 @@ public class Sample_OneHanded1 : MonoBehaviour
     // File where to save recorded gestures.
     // For example: "Assets/GestureRecognition/my_custom_gestures.dat"
     [SerializeField] private string SaveGesturesFile;
+
+    [Space]
+    public VRTK_ControllerEvents LeftHandEvents;
+    public VRTK_ControllerEvents RightHandEvents;
 
     // The gesture recognition object:
     // You can have as many of these as you want simultaneously.
@@ -83,7 +89,7 @@ public class Sample_OneHanded1 : MonoBehaviour
     void Start ()
     {
         // Set the welcome message.
-        HUDText = GameObject.Find("HUDText").GetComponent<Text>();
+        HUDText = GameObject.Find("TextCanvas").transform.Find("HUDText").GetComponent<Text>();
         HUDText.text = "Welcome to MARUI Gesture Plug-in!\n"
                       + "Press the trigger to draw a gesture. Available gestures:\n"
                       + "1 - a circle/ring (creates a cylinder)\n"
@@ -94,34 +100,22 @@ public class Sample_OneHanded1 : MonoBehaviour
 
         me = GCHandle.Alloc(this);
 
+        // Global setting:
+        // Ignore head tilt and roll rotation to approximate torso position.
+        //gr.ignoreHeadRotationUpDown = true;
+        //gr.ignoreHeadRotationTilt = true;
+
         // Load the set of gestures.
         if (LoadGesturesFile == null)
         {
-            LoadGesturesFile = "Sample_OneHanded_Gestures.dat";
+            LoadGesturesFile = "OneHanded_Base.dat";
         }
 
         // Find the location for the gesture database (.dat) file
 #if UNITY_EDITOR
         // When running the scene inside the Unity editor,
         // we can just load the file from the Assets/ folder:
-        string GesturesFilePath = "Assets/GestureRecognition";
-#elif UNITY_ANDROID
-        // On android, the file is in the .apk,
-        // so we need to first "download" it to the apps' cache folder.
-        AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-        AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-        string GesturesFilePath = activity.Call <AndroidJavaObject>("getCacheDir").Call<string>("getCanonicalPath");
-        UnityWebRequest request = UnityWebRequest.Get(Application.streamingAssetsPath + "/" + LoadGesturesFile);
-        request.SendWebRequest();
-        while (!request.isDone) {
-            // wait for file extraction to finish
-        }
-        if (request.isNetworkError)
-        {
-            HUDText.text = "Failed to extract sample gesture database file from apk.";
-            return;
-        }
-        File.WriteAllBytes(GesturesFilePath + "/" + LoadGesturesFile, request.downloadHandler.data);
+        string GesturesFilePath = "Assets/Gestures";
 #else
         // This will be the case when exporting a stand-alone PC app.
         // In this case, we can load the gesture database file from the streamingAssets folder.
@@ -135,45 +129,6 @@ public class Sample_OneHanded1 : MonoBehaviour
 
         // Reset the skybox tint color
         RenderSettings.skybox.SetColor("_Tint", new Color(0.5f, 0.5f, 0.5f, 1.0f));
-
-        // Hide unused models in the scene
-        GameObject controller_oculus_left = GameObject.Find("controller_oculus_left");
-        GameObject controller_oculus_right = GameObject.Find("controller_oculus_right");
-        GameObject controller_vive_left = GameObject.Find("controller_vive_left");
-        GameObject controller_vive_right = GameObject.Find("controller_vive_right");
-        GameObject controller_microsoft_left = GameObject.Find("controller_microsoft_left");
-        GameObject controller_microsoft_right = GameObject.Find("controller_microsoft_right");
-        GameObject controller_dummy_left = GameObject.Find("controller_dummy_left");
-        GameObject controller_dummy_right = GameObject.Find("controller_dummy_right");
-
-        controller_oculus_left.SetActive(false);
-        controller_oculus_right.SetActive(false);
-        controller_vive_left.SetActive(false);
-        controller_vive_right.SetActive(false);
-        controller_microsoft_left.SetActive(false);
-        controller_microsoft_right.SetActive(false);
-        controller_dummy_left.SetActive(false);
-        controller_dummy_right.SetActive(false);
-
-        if (XRDevice.model.Length >= 6 && XRDevice.model.Substring(0, 6) == "Oculus")
-        {
-            controller_oculus_left.SetActive(true);
-            controller_oculus_right.SetActive(true);
-        } else if (XRDevice.model.Length >= 4 && XRDevice.model.Substring(0, 4) == "Vive")
-        {
-            controller_vive_left.SetActive(true);
-            controller_vive_right.SetActive(true);
-        }
-        else if (XRDevice.model.Length >= 4 && XRDevice.model.Substring(0, 4) == "DELL")
-        {
-            controller_microsoft_left.SetActive(true);
-            controller_microsoft_right.SetActive(true);
-        }
-        else // 
-        {
-            controller_dummy_left.SetActive(true);
-            controller_dummy_right.SetActive(true);
-        }
         
         GameObject star = GameObject.Find("star");
         star.transform.localScale = new Vector3(0.0f, 0.0f, 0.0f);
@@ -181,19 +136,17 @@ public class Sample_OneHanded1 : MonoBehaviour
         controller_dummy.transform.localScale = new Vector3(0.0f, 0.0f, 0.0f);
     }
     
-
-    // Update:
     void Update()
     {
-        float escape = Input.GetAxis("escape");
-        if (escape > 0.0f)
+        if (Input.GetKeyDown(KeyCode.R))
         {
-            Application.Quit();
+            SceneManager.LoadScene(0);
         }
-        float trigger_left = Input.GetAxis("LeftControllerTrigger");
-        float trigger_right = Input.GetAxis("RightControllerTrigger");
+
+
         // If recording_gesture is -3, that means that the AI has recently finished learning a new gesture.
-        if (recording_gesture == -3) {
+        if (recording_gesture == -3)
+        {
             // Show "finished" message.
             double performance = gr.recognitionScore();
             HUDText.text = "Training finished!\n(Final recognition performance = " + (performance * 100.0) + "%)\nFeel free to use your new gesture.";
@@ -201,13 +154,14 @@ public class Sample_OneHanded1 : MonoBehaviour
             recording_gesture = -1;
         }
         // If recording_gesture is -2, that means that the AI is currently learning a new gesture.
-        if (recording_gesture == -2) {
+        if (recording_gesture == -2)
+        {
             // Show "please wait" message
             HUDText.text = "...training...\n(Current recognition performance = " + (last_performance_report * 100.0) + "%)\nPress the 'A'/'X'/Menu button to cancel training.";
             // In this mode, the user may press the "A/X/menu" button to cancel the learning process.
-            bool button_a_left = Input.GetButton("LeftControllerButtonA");
-            bool button_a_right = Input.GetButton("RightControllerButtonA");
-            if (button_a_left || button_a_right) {
+
+            if (LeftHandEvents.buttonOnePressed || RightHandEvents.buttonOnePressed)
+            {
                 // Button pressed: stop the learning process.
                 gr.stopTraining();
                 recording_gesture = -3;
@@ -218,11 +172,11 @@ public class Sample_OneHanded1 : MonoBehaviour
         // so the user can draw gestures.
 
         // If recording_gesture is -1, we're currently not recording a new gesture.
-        if (recording_gesture == -1) {
-            bool button_a_left = Input.GetButton("LeftControllerButtonA");
-            bool button_a_right = Input.GetButton("RightControllerButtonA");
+        if (recording_gesture == -1)
+        {
             // In this mode, the user can press button A/X/menu to create a new gesture
-            if (button_a_left || button_a_right) {
+            if (LeftHandEvents.buttonOnePressed || RightHandEvents.buttonOnePressed)
+            {
                 recording_gesture = gr.createGesture("custom gesture " + (gr.numberOfGestures() - 3));
                 // from now on: recording a new gesture
                 HUDText.text = "Learning a new gesture (custom gesture " + (recording_gesture-4) + "):\nPlease perform the gesture 25 times.\n(0 / 25)";
@@ -230,33 +184,41 @@ public class Sample_OneHanded1 : MonoBehaviour
         }
 
         // If the user is not yet dragging (pressing the trigger) on either controller, he hasn't started a gesture yet.
-        if (active_controller == null) {
+        if (active_controller == null)
+        {
             // If the user presses either controller's trigger, we start a new gesture.
-            if (trigger_right > 0.8) {
+            if (RightHandEvents.triggerPressed)
+            {
                 // Right controller trigger pressed.
-                active_controller = GameObject.Find("Right Hand");
-            } else if (trigger_left > 0.8) {
+                active_controller = VRTK_DeviceFinder.GetControllerRightHand();
+            }
+            else if (LeftHandEvents.triggerPressed)
+            {
                 // Left controller trigger pressed.
-                active_controller = GameObject.Find("Left Hand");
-            } else {
+                active_controller = VRTK_DeviceFinder.GetControllerLeftHand();
+            }
+            else
+            {
                 // If we arrive here, the user is pressing neither controller's trigger:
                 // nothing to do.
                 return;
             }
             // If we arrive here: either trigger was pressed, so we start the gesture.
-            GameObject hmd = GameObject.Find("Main Camera"); // alternative: Camera.main.gameObject
-            Vector3 hmd_p = hmd.transform.localPosition;
-            Quaternion hmd_q = hmd.transform.localRotation;
+            Transform hmd = VRTK_DeviceFinder.HeadsetTransform(); // alternative: Camera.main.gameObject
+            Vector3 hmd_p = hmd.localPosition;
+            Quaternion hmd_q = hmd.localRotation;
             gr.startStroke(hmd_p, hmd_q, recording_gesture);
         }
 
         // If we arrive here, the user is currently dragging with one of the controllers.
         // Check if the user is still dragging or if he let go of the trigger button.
-        if (trigger_left > 0.3 || trigger_right > 0.3) {
+        if (LeftHandEvents.triggerPressed || RightHandEvents.triggerPressed)
+        {
             // The user is still dragging with the controller: continue the gesture.
-            Vector3 p = active_controller.transform.position;
+            Vector3 p = active_controller.transform.localPosition;
             Quaternion q = active_controller.transform.rotation;
             gr.contdStroke(p, q);
+
             // Show the stroke by instatiating new objects
             GameObject star_instance = Instantiate(GameObject.Find("star"));
             GameObject star = new GameObject("stroke_" + stroke_index++);
@@ -269,13 +231,15 @@ public class Sample_OneHanded1 : MonoBehaviour
             float star_scale = (float)random.NextDouble() + 0.3f;
             star.transform.localScale    = new Vector3(star_scale, star_scale, star_scale);
             stroke.Add(star.name);
+
             return;
         }
         // else: if we arrive here, the user let go of the trigger, ending a gesture.
         active_controller = null;
 
         // Delete the objectes that we used to display the gesture.
-        foreach (string star in stroke) {
+        foreach (string star in stroke)
+        {
             Destroy(GameObject.Find(star));
             stroke_index = 0;
         }
@@ -288,18 +252,18 @@ public class Sample_OneHanded1 : MonoBehaviour
         Vector3 dir2 = Vector3.zero; // This will receive the minor direction of the gesture (direction of smallest expansion).
         int gesture_id = gr.endStroke(ref similarity, ref pos, ref scale, ref dir0, ref dir1, ref dir2);
 
-        // if (similarity < ???) {
-        //     ...maybe this is not the gesture I was looking for...
-        // }
-
         // If we are currently recording samples for a custom gesture, check if we have recorded enough samples yet.
-        if (recording_gesture >= 0) {
+        if (recording_gesture >= 0)
+        {
             // Currently recording samples for a custom gesture - check how many we have recorded so far.
             int num_samples = gr.getGestureNumberOfSamples(recording_gesture);
-            if (num_samples < 25) {
+            if (num_samples < 25)
+            {
                 // Not enough samples recorded yet.
                 HUDText.text = "Learning a new gesture (custom gesture " + (recording_gesture - 3) + "):\nPlease perform the gesture 25 times.\n(" + num_samples + " / 25)";
-            } else {
+            }
+            else
+            {
                 // Enough samples recorded. Start the learning process.
                 HUDText.text = "Learning gestures - please wait...\n(press A/X/menu button to stop the learning process)";
                 // Set up the call-backs to receive information about the learning process.
@@ -307,28 +271,35 @@ public class Sample_OneHanded1 : MonoBehaviour
                 gr.setTrainingUpdateCallbackMetadata((IntPtr)me);
                 gr.setTrainingFinishCallback(trainingFinishCallback);
                 gr.setTrainingFinishCallbackMetadata((IntPtr)me);
-                gr.setMaxTrainingTime(10000);
+                gr.setMaxTrainingTime(30);
                 // Set recording_gesture to -2 to indicate that we're currently in learning mode.
                 recording_gesture = -2;
-                if (gr.startTraining() == false) {
+                if (gr.startTraining() == false)
+                {
                     Debug.Log("COULD NOT START TRAINING");
                 }
             }
             return;
         }
-        // else: if we arrive here, we're not recording new sampled for custom gestures,
+        // else: if we arrive here, we're not recording new samples for custom gestures,
         // but instead have identified a new gesture.
         // Perform the action associated with that gesture.
+
+        if (similarity < 0.6f)
+        {
+            HUDText.text = "Similarity lower than permitted: " + similarity;
+            return;
+        }
 
         if (gesture_id < 0)
         {
             // Error trying to identify any gesture
-            HUDText.text = "Failed to identify gesture.";
+            HUDText.text = "Failed to identify gesture." + "\nSimilarity: " + similarity;
         }
         else if (gesture_id == 0)
         {
             // "loop"-gesture: create cylinder
-            HUDText.text = "Identified a CIRCLE/LOOP gesture!";
+            HUDText.text = "Identified a CIRCLE/LOOP gesture!" + "\nSimilarity: " + similarity;
             GameObject cylinder = Instantiate(GameObject.Find("controller_dummy"));
             cylinder.transform.localPosition = pos;
             cylinder.transform.localRotation = Quaternion.FromToRotation(new Vector3(0, 1, 0), dir2);
@@ -338,7 +309,7 @@ public class Sample_OneHanded1 : MonoBehaviour
         else if (gesture_id == 1)
         {
             // "swipe left"-gesture: rotate left
-            HUDText.text = "Identified a SWIPE LEFT gesture!";
+            HUDText.text = "Identified a SWIPE LEFT gesture!" + "\nSimilarity: " + similarity;
             GameObject closest_object = getClosestObject(pos);
             if (closest_object != null)
             {
@@ -348,7 +319,7 @@ public class Sample_OneHanded1 : MonoBehaviour
         else if (gesture_id == 2)
         {
             // "swipe right"-gesture: rotate right
-            HUDText.text = "Identified a SWIPE RIGHT gesture!";
+            HUDText.text = "Identified a SWIPE RIGHT gesture!" + "\nSimilarity: " + similarity;
             GameObject closest_object = getClosestObject(pos);
             if (closest_object != null)
             {
@@ -358,7 +329,7 @@ public class Sample_OneHanded1 : MonoBehaviour
         else if (gesture_id == 3)
         {
             // "shake" or "scrap" gesture: delete closest object
-            HUDText.text = "Identified a SHAKE gesture!";
+            HUDText.text = "Identified a SHAKE gesture!" + "\nSimilarity: " + similarity;
             GameObject closest_object = getClosestObject(pos);
             if (closest_object != null)
             {
@@ -369,7 +340,7 @@ public class Sample_OneHanded1 : MonoBehaviour
         else if (gesture_id == 4)
         {
             // "draw sword" gesture
-            HUDText.text = "MAGIC!";
+            HUDText.text = "MAGIC!" + "\nSimilarity: " + similarity;
             Color col = RenderSettings.skybox.GetColor("_Tint");
             if (col.r < 0.51)
             {
@@ -383,7 +354,7 @@ public class Sample_OneHanded1 : MonoBehaviour
         else
         {
             // Other ID: one of the user-registered gestures:
-            HUDText.text = "Identified custom registered gesture " + (gesture_id - 4);
+            HUDText.text = "Identified custom registered gesture " + (gesture_id - 4) + "\nSimilarity: " + similarity;
         }
     }
 
@@ -412,7 +383,7 @@ public class Sample_OneHanded1 : MonoBehaviour
         me.recording_gesture = -3;
         // Save the data to file.
 #if UNITY_EDITOR
-        string GesturesFilePath = "Assets/GestureRecognition";
+        string GesturesFilePath = "Assets/Gestures";
 #elif UNITY_ANDROID
         string GesturesFilePath = Application.persistentDataPath;
 #else
@@ -420,7 +391,7 @@ public class Sample_OneHanded1 : MonoBehaviour
 #endif
         if (me.SaveGesturesFile == null)
         {
-            me.SaveGesturesFile = "Sample_OneHanded_MyRecordedGestures.dat";
+            me.SaveGesturesFile = "OneHanded_Avatar.dat";
         }
         me.gr.saveToFile(GesturesFilePath + "/" + me.SaveGesturesFile);
     }

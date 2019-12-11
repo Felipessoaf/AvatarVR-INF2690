@@ -33,6 +33,8 @@ using System;
 using System.Runtime.InteropServices;
 using UnityEngine.UI;
 using UnityEngine.XR;
+using UnityEngine.SceneManagement;
+using VRTK;
 
 
 public class Sample_TwoHanded1 : MonoBehaviour
@@ -55,6 +57,10 @@ public class Sample_TwoHanded1 : MonoBehaviour
     // Time the controller must be held still for averaged controller motion to detect if the controller is still moving.
     [SerializeField] private double ControllerMotionTimeThreshold;
 
+    [Space]
+    public VRTK_ControllerEvents LeftHandEvents;
+    public VRTK_ControllerEvents RightHandEvents;
+
     // Averaged controller motion (distance).
     private double controller_motion_distance_left = 0;
     private double controller_motion_distance_right = 0;
@@ -70,6 +76,8 @@ public class Sample_TwoHanded1 : MonoBehaviour
     // Whether the user is currently pressing the contoller trigger.
     private bool trigger_pressed_left = false;
     private bool trigger_pressed_right = false;
+    //private bool fake_trigger_pressed_left = false;
+    //private bool fake_trigger_pressed_right = false;
 
     // Wether a gesture was already started
     private bool gesture_started = false;
@@ -103,7 +111,7 @@ public class Sample_TwoHanded1 : MonoBehaviour
     void Start ()
     {
         // Set the welcome message.
-        HUDText = GameObject.Find("HUDText").GetComponent<Text>();
+        HUDText = GameObject.Find("TextCanvas").transform.Find("HUDText").GetComponent<Text>();
         HUDText.text = "Welcome to 3D Gesture Recognition Plug-in!\n"
                       + "Press triggers of both controllers to draw a gesture,\n"
                       + "and hold the end position for " + ControllerMotionTimeThreshold + "s.\n"
@@ -123,56 +131,18 @@ public class Sample_TwoHanded1 : MonoBehaviour
 
         // Load the default set of gestures.
 #if UNITY_EDITOR
-        string gesture_file_path = "Assets/GestureRecognition";
+        string gesture_file_path = "Assets/Gestures";
 #else
         string gesture_file_path = Application.streamingAssetsPath;
 #endif
         if (LoadGesturesFile == null)
         {
-            LoadGesturesFile = "Sample_TwoHanded_Gestures.dat";
+            LoadGesturesFile = "TwoHanded_Base.dat";
         }
         if (gc.loadFromFile(gesture_file_path + "/" + LoadGesturesFile) == false)
         {
             HUDText.text = "Failed to load sample gesture database file";
             return;
-        }
-
-        GameObject controller_oculus_left = GameObject.Find("controller_oculus_left");
-        GameObject controller_oculus_right = GameObject.Find("controller_oculus_right");
-        GameObject controller_vive_left = GameObject.Find("controller_vive_left");
-        GameObject controller_vive_right = GameObject.Find("controller_vive_right");
-        GameObject controller_microsoft_left = GameObject.Find("controller_microsoft_left");
-        GameObject controller_microsoft_right = GameObject.Find("controller_microsoft_right");
-        GameObject controller_dummy_left = GameObject.Find("controller_dummy_left");
-        GameObject controller_dummy_right = GameObject.Find("controller_dummy_right");
-
-        controller_oculus_left.SetActive(false);
-        controller_oculus_right.SetActive(false);
-        controller_vive_left.SetActive(false);
-        controller_vive_right.SetActive(false);
-        controller_microsoft_left.SetActive(false);
-        controller_microsoft_right.SetActive(false);
-        controller_dummy_left.SetActive(false);
-        controller_dummy_right.SetActive(false);
-
-        if (XRDevice.model.Length >= 6 && XRDevice.model.Substring(0, 6) == "Oculus")
-        {
-            controller_oculus_left.SetActive(true);
-            controller_oculus_right.SetActive(true);
-        } else if (XRDevice.model.Length >= 4 && XRDevice.model.Substring(0, 4) == "Vive")
-        {
-            controller_vive_left.SetActive(true);
-            controller_vive_right.SetActive(true);
-        }
-        else if (XRDevice.model.Length >= 4 && XRDevice.model.Substring(0, 4) == "DELL")
-        {
-            controller_microsoft_left.SetActive(true);
-            controller_microsoft_right.SetActive(true);
-        }
-        else // 
-        {
-            controller_dummy_left.SetActive(true);
-            controller_dummy_right.SetActive(true);
         }
 
         if (ControllerMotionDistanceThreshold == 0)
@@ -189,15 +159,14 @@ public class Sample_TwoHanded1 : MonoBehaviour
     // Update:
     void Update()
     {
-        float escape = Input.GetAxis("escape");
-        if (escape > 0.0f)
+        if (Input.GetKeyDown(KeyCode.R))
         {
-            Application.Quit();
+            SceneManager.LoadScene(0);
         }
-        float trigger_left = Input.GetAxis("LeftControllerTrigger");
-        float trigger_right = Input.GetAxis("RightControllerTrigger");
+
         // If recording_gesture is -3, that means that the AI has recently finished learning a new gesture.
-        if (recording_gesture == -3) {
+        if (recording_gesture == -3)
+        {
             // Show "finished" message.
             double performance = gc.recognitionScore();
             HUDText.text = "Training finished!\n(Final recognition performance = " + (performance * 100.0) + "%)\nFeel free to use your new gesture.";
@@ -205,13 +174,13 @@ public class Sample_TwoHanded1 : MonoBehaviour
             recording_gesture = -1;
         }
         // If recording_gesture is -2, that means that the AI is currently learning a new gesture.
-        if (recording_gesture == -2) {
+        if (recording_gesture == -2)
+        {
             // Show "please wait" message
             HUDText.text = "...training...\n(Current recognition performance = " + (last_performance_report * 100.0) + "%)\nPress the 'A'/'X'/Menu button to cancel training.";
             // In this mode, the user may press the "B/Y/menu" button to cancel the learning process.
-            bool button_a_left = Input.GetButton("LeftControllerButtonA");
-            bool button_a_right = Input.GetButton("RightControllerButtonA");
-            if (button_a_left || button_a_right) {
+            if (LeftHandEvents.buttonOnePressed || RightHandEvents.buttonOnePressed)
+            {
                 // Button pressed: stop the learning process.
                 gc.stopTraining();
                 recording_gesture = -3;
@@ -222,11 +191,11 @@ public class Sample_TwoHanded1 : MonoBehaviour
         // so the user can draw gestures.
 
         // If recording_gesture is -1, we're currently not recording a new gesture.
-        if (recording_gesture == -1) {
-            bool button_a_left = Input.GetButton("LeftControllerButtonA");
-            bool button_a_right = Input.GetButton("RightControllerButtonA");
+        if (recording_gesture == -1)
+        {
             // In this mode, the user can press button A/X to create a new gesture
-            if (button_a_left || button_a_right) {
+            if (LeftHandEvents.buttonOnePressed || RightHandEvents.buttonOnePressed)
+            {
                 int recording_gesture_left = gc.createGesture(Side_Left, "custom gesture " + (gc.numberOfGestures(Side_Left) + 1));
                 int recording_gesture_right = gc.createGesture(Side_Right, "custom gesture " + (gc.numberOfGestures(Side_Right) + 1));
                 recording_gesture = gc.createGestureCombination("custom gesture " + (gc.numberOfGestureCombinations() + 1));
@@ -239,26 +208,28 @@ public class Sample_TwoHanded1 : MonoBehaviour
 
         
         // If the user presses either controller's trigger, we start a new gesture.
-        if (trigger_pressed_left == false && trigger_left > 0.8) { 
+        if (trigger_pressed_left == false && LeftHandEvents.triggerPressed)
+        { 
             // Controller trigger pressed.
             trigger_pressed_left = true;
-            GameObject hmd = GameObject.Find("Main Camera"); // alternative: Camera.main.gameObject
-            Vector3 hmd_p = hmd.transform.localPosition;
-            Quaternion hmd_q = hmd.transform.localRotation;
+            Transform hmd = VRTK_DeviceFinder.HeadsetTransform(); // alternative: Camera.main.gameObject
+            Vector3 hmd_p = hmd.localPosition;
+            Quaternion hmd_q = hmd.localRotation;
             gc.startStroke(Side_Left, hmd_p, hmd_q, recording_gesture);
             gesture_started = true;
         }
-        if (trigger_pressed_right == false && trigger_right > 0.8)
+        if (trigger_pressed_right == false && RightHandEvents.triggerPressed)
         {
             // Controller trigger pressed.
             trigger_pressed_right = true;
-            GameObject hmd = GameObject.Find("Main Camera"); // alternative: Camera.main.gameObject
-            Vector3 hmd_p = hmd.transform.localPosition;
-            Quaternion hmd_q = hmd.transform.localRotation;
+            Transform hmd = VRTK_DeviceFinder.HeadsetTransform(); // alternative: Camera.main.gameObject
+            Vector3 hmd_p = hmd.localPosition;
+            Quaternion hmd_q = hmd.localRotation;
             gc.startStroke(Side_Right, hmd_p, hmd_q, recording_gesture);
             gesture_started = true;
         }
-        if (gesture_started == false) {
+        if (gesture_started == false)
+        {
             // nothing to do.
             return;
         }
@@ -266,21 +237,45 @@ public class Sample_TwoHanded1 : MonoBehaviour
         // If we arrive here, the user is currently dragging with one of the controllers.
         if (trigger_pressed_left == true)
         {
-            if (trigger_left < 0.3 && controller_motion_distance_left < ControllerMotionDistanceThreshold && System.DateTime.Now.Subtract(controller_motion_time_left).Seconds > ControllerMotionTimeThreshold)
+            if (!LeftHandEvents.triggerPressed && controller_motion_distance_left < ControllerMotionDistanceThreshold && System.DateTime.Now.Subtract(controller_motion_time_left).Seconds > ControllerMotionTimeThreshold)
             {
                 // User let go of a trigger and held controller still
                 gc.endStroke(Side_Left);
                 trigger_pressed_left = false;
-            } else
+
+                //if (fake_trigger_pressed_right)
+                //{
+                //    fake_trigger_pressed_right = false;
+                //    gc.endStroke(Side_Right);
+                //}
+            }
+            else
             {
                 // User still dragging or still moving after trigger pressed
-                GameObject left_hand = GameObject.Find("Left Hand");
-                gc.contdStroke(Side_Left, left_hand.transform.position, left_hand.transform.rotation);
+                GameObject left_hand = VRTK_DeviceFinder.GetControllerLeftHand();
+                gc.contdStroke(Side_Left, left_hand.transform.localPosition, left_hand.transform.rotation);
+
+                //if (fake_trigger_pressed_right && !trigger_pressed_right)
+                //{
+                //    gc.contdStroke(Side_Left, Vector3.zero, Quaternion.identity);
+                //}
+
+                //if (!trigger_pressed_right && !fake_trigger_pressed_right)
+                //{
+                //    Transform hmd = VRTK_DeviceFinder.HeadsetTransform();
+                //    Vector3 hmd_p = hmd.localPosition;
+                //    Quaternion hmd_q = hmd.localRotation;
+                //    gc.startStroke(Side_Right, hmd_p, hmd_q, recording_gesture);
+                //    fake_trigger_pressed_right = true;
+                //}
+
                 // Show the stroke by instatiating new objects
                 addToStrokeTrail(left_hand.transform.position);
-                float contoller_motion = (left_hand.transform.position - controller_motion_last_left).magnitude;
-                controller_motion_last_left = left_hand.transform.position;
+
+                float contoller_motion = (left_hand.transform.localPosition - controller_motion_last_left).magnitude;
+                controller_motion_last_left = left_hand.transform.localPosition;
                 controller_motion_distance_left = (controller_motion_distance_left + contoller_motion) * 0.5f; // averaging
+
                 if (controller_motion_distance_left > ControllerMotionDistanceThreshold)
                 {
                     controller_motion_time_left = System.DateTime.Now;
@@ -290,7 +285,7 @@ public class Sample_TwoHanded1 : MonoBehaviour
 
         if (trigger_pressed_right == true)
         {
-            if (trigger_right < 0.3 && controller_motion_distance_right < ControllerMotionDistanceThreshold && System.DateTime.Now.Subtract(controller_motion_time_right).Seconds > ControllerMotionTimeThreshold)
+            if (!RightHandEvents.triggerPressed && controller_motion_distance_right < ControllerMotionDistanceThreshold && System.DateTime.Now.Subtract(controller_motion_time_right).Seconds > ControllerMotionTimeThreshold)
             {
                 // User let go of a trigger and held controller still
                 gc.endStroke(Side_Right);
@@ -299,13 +294,30 @@ public class Sample_TwoHanded1 : MonoBehaviour
             else
             {
                 // User still dragging or still moving after trigger pressed
-                GameObject right_hand = GameObject.Find("Right Hand");
+                GameObject right_hand = VRTK_DeviceFinder.GetControllerRightHand();
                 gc.contdStroke(Side_Right, right_hand.transform.position, right_hand.transform.rotation);
+
+                //if (fake_trigger_pressed_left && !trigger_pressed_left)
+                //{
+                //    gc.contdStroke(Side_Left, Vector3.zero, Quaternion.identity);
+                //}
+
+                //if (!trigger_pressed_left && !fake_trigger_pressed_left)
+                //{
+                //    Transform hmd = VRTK_DeviceFinder.HeadsetTransform();
+                //    Vector3 hmd_p = hmd.localPosition;
+                //    Quaternion hmd_q = hmd.localRotation;
+                //    gc.startStroke(Side_Left, hmd_p, hmd_q, recording_gesture);
+                //    fake_trigger_pressed_left = true;
+                //}
+
                 // Show the stroke by instatiating new objects
                 addToStrokeTrail(right_hand.transform.position);
+
                 float contoller_motion = (right_hand.transform.position - controller_motion_last_right).magnitude;
                 controller_motion_last_right = right_hand.transform.position;
                 controller_motion_distance_right = (controller_motion_distance_right + contoller_motion) * 0.5f; // averaging
+
                 if (controller_motion_distance_right > ControllerMotionDistanceThreshold)
                 {
                     controller_motion_time_right = System.DateTime.Now;
@@ -322,7 +334,8 @@ public class Sample_TwoHanded1 : MonoBehaviour
         gesture_started = false;
 
         // Delete the objectes that we used to display the gesture.
-        foreach (string star in stroke) {
+        foreach (string star in stroke)
+        {
             Destroy(GameObject.Find(star));
             stroke_index = 0;
         }
@@ -331,13 +344,17 @@ public class Sample_TwoHanded1 : MonoBehaviour
         int multigesture_id = gc.identifyGestureCombination(ref similarity);
         
         // If we are currently recording samples for a custom gesture, check if we have recorded enough samples yet.
-        if (recording_gesture >= 0) {
+        if (recording_gesture >= 0)
+        {
             // Currently recording samples for a custom gesture - check how many we have recorded so far.
-            int num_samples = gc.getGestureNumberOfSamples(Side_Left, recording_gesture);
-            if (num_samples < 25) {
+            int num_samples = gc.getGestureNumberOfSamples(Side_Left, recording_gesture); //Mathf.Max(gc.getGestureNumberOfSamples(Side_Left, recording_gesture), gc.getGestureNumberOfSamples(Side_Right, recording_gesture));
+            if (num_samples < 25)
+            {
                 // Not enough samples recorded yet.
                 HUDText.text = "Learning a new gesture (custom gesture " + (recording_gesture - 3) + "):\nPlease perform the gesture 25 times.\n(" + num_samples + " / 25)";
-            } else {
+            }
+            else
+            {
                 // Enough samples recorded. Start the learning process.
                 HUDText.text = "Learning gestures - please wait...\n(press B button to stop the learning process)";
                 // Set up the call-backs to receive information about the learning process.
@@ -346,42 +363,52 @@ public class Sample_TwoHanded1 : MonoBehaviour
                 gc.setTrainingFinishCallback(trainingFinishCallback);
                 gc.setTrainingFinishCallbackMetadata((IntPtr)me);
                 gc.setMaxTrainingTime(30);
+
                 // Set recording_gesture to -2 to indicate that we're currently in learning mode.
                 recording_gesture = -2;
-                if (gc.startTraining() == false) {
+
+                if (gc.startTraining() == false)
+                {
                     Debug.Log("COULD NOT START TRAINING");
                 }
             }
             return;
         }
+
+        //if (similarity < 0.6f)
+        //{
+        //    HUDText.text = "Similarity lower than permitted: " + similarity;
+        //    return;
+        //}
+
         // else: if we arrive here, we're not recording new samples for custom gestures,
         // but instead have identified a new gesture.
         // Perform the action associated with that gesture.
         if (multigesture_id < 0)
         {
             // Error trying to identify any gesture
-            HUDText.text = "Failed to identify gesture.";
+            HUDText.text = "Failed to identify gesture." + "\nSimilarity: " + similarity;
         }
         else if (multigesture_id == 0)
         {
-            HUDText.text = "Identified a \"throw-your-hands-up\" gesture!";
+            HUDText.text = "Identified a \"throw-your-hands-up\" gesture!" + "\nSimilarity: " + similarity;
         }
         else if (multigesture_id == 1)
         {
-            HUDText.text = "Identified a chest-pounding gesture!";
+            HUDText.text = "Identified a chest-pounding gesture!" + "\nSimilarity: " + similarity;
         }
         else if (multigesture_id == 2)
         {
-            HUDText.text = "Identified a bow-and-arrow gesture!";
+            HUDText.text = "Identified a bow-and-arrow gesture!" + "\nSimilarity: " + similarity;
         }
         else if (multigesture_id == 3)
         {
-            HUDText.text = "Identified a heart-shape gesture!";
+            HUDText.text = "Identified a heart-shape gesture!" + "\nSimilarity: " + similarity;
         }
         else
         {
             // Other ID: one of the user-registered gestures:
-            HUDText.text = " identified custom registered gesture " + (multigesture_id - 3);
+            HUDText.text = " identified custom registered gesture " + (multigesture_id - 3) + "\nSimilarity: " + similarity;
         }
     }
 
