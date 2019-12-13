@@ -886,8 +886,8 @@ MonoBehaviour:
   EditMode: 1
   FakeMode: 1
   similarityMin: 0.1
-  LoadGesturesFile: TwoHanded_Base.dat
-  SaveGesturesFile: TwoHanded_Avatar.dat
+  LoadGesturesFile: TwoHanded_Avatar.dat
+  SaveGesturesFile: TwoHanded_Avatar2.dat
   ControllerMotionDistanceThreshold: 1
   ControllerMotionTimeThreshold: 0.01
   LeftHandEvents: {fileID: 1173348557}

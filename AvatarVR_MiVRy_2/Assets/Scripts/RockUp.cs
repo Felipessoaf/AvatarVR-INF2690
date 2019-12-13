@@ -8,6 +8,10 @@ public class RockUp : MonoBehaviour
 
     public float Force = 100;
 
+    [Space]
+    public AudioSource GanchoAudio;
+    public AudioSource SocoAudio;
+
     float lastYPos;
     bool falling = false;
     bool punched = false;
@@ -30,6 +34,9 @@ public class RockUp : MonoBehaviour
     {
         Impulse();
         lastYPos = transform.position.y;
+
+        GanchoAudio.Play();
+        print("new!");
     }
 
     private void Update()
@@ -53,7 +60,8 @@ public class RockUp : MonoBehaviour
     {
         falling = true;
         GetComponent<Rigidbody>().useGravity = false;
-        if(allUp)
+        GetComponent<Rigidbody>().velocity = Vector3.zero;
+        if (allUp)
         {
             yield return new WaitWhile(() => waitAllDown);
         }
@@ -71,6 +79,9 @@ public class RockUp : MonoBehaviour
         GetComponentInChildren<Collider>().isTrigger = false;
         GetComponent<Rigidbody>().useGravity = true;
         GetComponent<Rigidbody>().AddForce(direction * force, ForceMode.Impulse);
+
+        SocoAudio.Play();
+        print("punched!");
     }
 
     public static void AllRocksUp()
