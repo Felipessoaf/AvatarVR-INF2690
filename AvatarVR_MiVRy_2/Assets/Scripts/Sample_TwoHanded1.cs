@@ -39,6 +39,18 @@ using VRTK;
 
 public class Sample_TwoHanded1 : MonoBehaviour
 {
+    public enum AvatarGestures
+    {
+        Gancho,
+        Soco,
+        Cavalo,
+        SemiCirculoUp,
+        InfinitoDown,
+        SocoXDown,
+        Concentracao,
+        None
+    }
+
     // Convenience ID's for the "left" and "right" sub-gestures.
     public const int Side_Left = 0;
     public const int Side_Right = 1;
@@ -65,6 +77,15 @@ public class Sample_TwoHanded1 : MonoBehaviour
     [Space]
     public VRTK_ControllerEvents LeftHandEvents;
     public VRTK_ControllerEvents RightHandEvents;
+
+    [Space]
+    public GameObject RockUp;
+    public LayerMask SocoLayer;
+
+    [HideInInspector]
+    public VRTK_Pointer teleportPointer;
+
+    bool teleporting = false;
 
     // Averaged controller motion (distance).
     private double controller_motion_distance_left = 0;
@@ -168,9 +189,27 @@ public class Sample_TwoHanded1 : MonoBehaviour
     // Update:
     void Update()
     {
+        if (VRTK_DeviceFinder.HeadsetTransform())
+        {
+            transform.position = VRTK_DeviceFinder.HeadsetTransform().position;
+        }
+
         if (Input.GetKeyDown(KeyCode.R))
         {
             SceneManager.LoadScene(0);
+        }
+
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            Gancho();
+        }
+        else if (Input.GetKeyDown(KeyCode.H))
+        {
+            Soco();
+        }
+        else if (Input.GetKeyDown(KeyCode.C))
+        {
+            Cavalo();
         }
 
         // If recording_gesture is -3, that means that the AI has recently finished learning a new gesture.
@@ -434,8 +473,36 @@ public class Sample_TwoHanded1 : MonoBehaviour
         }
         else
         {
-            // Other ID: one of the user-registered gestures:
-            HUDText.text = " identified custom registered gesture " + (multigesture_id - 3) + "\nSimilarity: " + similarity;
+            multigesture_id -=  4;
+
+            if (multigesture_id == (int)AvatarGestures.Gancho)
+            {
+                Gancho();
+            }
+            else if (multigesture_id == (int)AvatarGestures.Soco)
+            {
+                Soco();
+            }
+            else if (multigesture_id == (int)AvatarGestures.InfinitoDown)
+            {
+                HUDText.text = "Identified a " + AvatarGestures.InfinitoDown + " gesture!";
+            }
+            else if (multigesture_id == (int)AvatarGestures.SocoXDown)
+            {
+                HUDText.text = "Identified a " + AvatarGestures.SocoXDown + " gesture!";
+            }
+            else if (multigesture_id == (int)AvatarGestures.Cavalo)
+            {
+                Cavalo();
+            }
+            else if (multigesture_id == (int)AvatarGestures.SemiCirculoUp)
+            {
+                HUDText.text = "Identified a " + AvatarGestures.SemiCirculoUp + " gesture!";
+            }
+            else if (multigesture_id == (int)AvatarGestures.Concentracao)
+            {
+                HUDText.text = "Identified a " + AvatarGestures.Concentracao + " gesture!";
+            }
         }
     }
 
@@ -486,5 +553,54 @@ public class Sample_TwoHanded1 : MonoBehaviour
         me.last_performance_report = performance;
         // Signal that training was finished.
         me.recording_gesture = -3;
+    }
+
+    public void Gancho()
+    {
+        HUDText.text = "Identified a " + AvatarGestures.Gancho + " gesture!";
+        Instantiate(RockUp, transform.position + transform.forward * 2 - transform.up, RockUp.transform.rotation);
+    }
+
+    public void Soco()
+    {
+        HUDText.text = "Identified a " + AvatarGestures.Soco + " gesture!";
+
+        if (teleporting)
+        {
+            LeftHandEvents.OnTouchpadReleased(LeftHandEvents.SetControllerEvent(ref LeftHandEvents.touchpadPressed, false, 0f));
+        }
+        else
+        {
+            RaycastHit hit;
+            Debug.DrawRay(transform.GetChild(0).position + Vector3.up * 0.5f, transform.GetChild(0).forward * 5, Color.green, 5, false);
+            Debug.DrawRay(transform.GetChild(0).position + Vector3.down * 0.5f, transform.GetChild(0).forward * 5, Color.red, 5, false);
+            if (Physics.Raycast(transform.GetChild(0).position + Vector3.up * 0.5f, transform.GetChild(0).forward, out hit, 5, SocoLayer, QueryTriggerInteraction.Collide))
+            {
+                if (hit.transform.GetComponent<RockUp>())
+                {
+                    hit.transform.GetComponent<RockUp>().Punch(transform.GetChild(0).forward, 10);
+                }
+            }
+            else if (Physics.Raycast(transform.GetChild(0).position + Vector3.down * 0.5f, transform.GetChild(0).forward, out hit, 5, SocoLayer, QueryTriggerInteraction.Collide))
+            {
+                if (hit.transform.GetComponent<RockUp>())
+                {
+                    hit.transform.GetComponent<RockUp>().Punch(transform.GetChild(0).forward, 10);
+                }
+            }
+        }
+    }
+
+    public void Cavalo()
+    {
+        HUDText.text = "Identified a " + AvatarGestures.Cavalo + " gesture!";
+
+        LeftHandEvents.OnTouchpadPressed(LeftHandEvents.SetControllerEvent(ref LeftHandEvents.touchpadPressed, true, 1f));
+        teleporting = true;
+    }
+
+    public void Teleport()
+    {
+        teleportPointer.FinishTeleport();
     }
 }
