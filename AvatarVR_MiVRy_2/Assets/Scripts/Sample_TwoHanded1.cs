@@ -43,6 +43,11 @@ public class Sample_TwoHanded1 : MonoBehaviour
     public const int Side_Left = 0;
     public const int Side_Right = 1;
 
+    public bool EditMode = false;
+    public bool FakeMode = false;
+    [Range(0, 1)]
+    public float similarityMin = 0.3f;
+
     // The file from which to load gestures on startup (left hand).
     // For example: "Assets/GestureRecognition/Sample_TwoHanded_Gestures.dat"
     [SerializeField] private string LoadGesturesFile;
@@ -109,9 +114,13 @@ public class Sample_TwoHanded1 : MonoBehaviour
 
     // Initialization:
     void Start ()
-    {
+    {        
         // Set the welcome message.
         HUDText = GameObject.Find("TextCanvas").transform.Find("HUDText").GetComponent<Text>();
+
+
+        HUDText.gameObject.SetActive(EditMode);
+
         HUDText.text = "Welcome to 3D Gesture Recognition Plug-in!\n"
                       + "Press triggers of both controllers to draw a gesture,\n"
                       + "and hold the end position for " + ControllerMotionTimeThreshold + "s.\n"
@@ -126,8 +135,8 @@ public class Sample_TwoHanded1 : MonoBehaviour
 
         // Global setting:
         // Ignore head tilt and roll rotation to approximate torso position.
-        gc.ignoreHeadRotationUpDown = true;
-        gc.ignoreHeadRotationTilt = true;
+        gc.ignoreHeadRotationUpDown = false;
+        gc.ignoreHeadRotationTilt = false;
 
         // Load the default set of gestures.
 #if UNITY_EDITOR
@@ -191,7 +200,7 @@ public class Sample_TwoHanded1 : MonoBehaviour
         // so the user can draw gestures.
 
         // If recording_gesture is -1, we're currently not recording a new gesture.
-        if (recording_gesture == -1)
+        if (recording_gesture == -1 && EditMode)
         {
             // In this mode, the user can press button A/X to create a new gesture
             if (LeftHandEvents.buttonOnePressed || RightHandEvents.buttonOnePressed)
@@ -243,7 +252,7 @@ public class Sample_TwoHanded1 : MonoBehaviour
                 gc.endStroke(Side_Left);
                 trigger_pressed_left = false;
 
-                if (fake_trigger_pressed_right)
+                if (fake_trigger_pressed_right && FakeMode)
                 {
                     fake_trigger_pressed_right = false;
                     gc.endStroke(Side_Right);
@@ -255,12 +264,12 @@ public class Sample_TwoHanded1 : MonoBehaviour
                 GameObject left_hand = VRTK_DeviceFinder.GetControllerLeftHand();
                 gc.contdStroke(Side_Left, left_hand.transform.localPosition, left_hand.transform.rotation);
 
-                if (fake_trigger_pressed_right && !trigger_pressed_right)
+                if (fake_trigger_pressed_right && !trigger_pressed_right && FakeMode)
                 {
-                    gc.contdStroke(Side_Left, Vector3.zero, Quaternion.identity);
+                    gc.contdStroke(Side_Right, Vector3.zero, Quaternion.identity);
                 }
 
-                if (!trigger_pressed_right && !fake_trigger_pressed_right)
+                if (!trigger_pressed_right && !fake_trigger_pressed_right && FakeMode)
                 {
                     Transform hmd = VRTK_DeviceFinder.HeadsetTransform();
                     Vector3 hmd_p = hmd.localPosition;
@@ -291,7 +300,7 @@ public class Sample_TwoHanded1 : MonoBehaviour
                 gc.endStroke(Side_Right);
                 trigger_pressed_right = false;
 
-                if (fake_trigger_pressed_left)
+                if (fake_trigger_pressed_left && FakeMode)
                 {
                     fake_trigger_pressed_left = false;
                     gc.endStroke(Side_Left);
@@ -303,12 +312,15 @@ public class Sample_TwoHanded1 : MonoBehaviour
                 GameObject right_hand = VRTK_DeviceFinder.GetControllerRightHand();
                 gc.contdStroke(Side_Right, right_hand.transform.position, right_hand.transform.rotation);
 
-                if (fake_trigger_pressed_left && !trigger_pressed_left)
+                if (fake_trigger_pressed_left && !trigger_pressed_left && FakeMode)
                 {
-                    gc.contdStroke(Side_Left, Vector3.zero, Quaternion.identity);
+                    Vector3 newPos = right_hand.transform.position;
+                    newPos.x *= -1;
+
+                    gc.contdStroke(Side_Left, newPos, right_hand.transform.rotation);
                 }
 
-                if (!trigger_pressed_left && !fake_trigger_pressed_left)
+                if (!trigger_pressed_left && !fake_trigger_pressed_left && FakeMode)
                 {
                     Transform hmd = VRTK_DeviceFinder.HeadsetTransform();
                     Vector3 hmd_p = hmd.localPosition;
@@ -353,8 +365,16 @@ public class Sample_TwoHanded1 : MonoBehaviour
         if (recording_gesture >= 0)
         {
             // Currently recording samples for a custom gesture - check how many we have recorded so far.
-            //int num_samples = gc.getGestureNumberOfSamples(Side_Left, recording_gesture);
-            int num_samples = Mathf.Max(gc.getGestureNumberOfSamples(Side_Left, recording_gesture), gc.getGestureNumberOfSamples(Side_Right, recording_gesture));
+            int num_samples;
+            if (FakeMode)
+            {
+                num_samples = Mathf.Max(gc.getGestureNumberOfSamples(Side_Left, recording_gesture), gc.getGestureNumberOfSamples(Side_Right, recording_gesture));
+            }
+            else
+            {
+                num_samples = gc.getGestureNumberOfSamples(Side_Left, recording_gesture);
+            }
+
             if (num_samples < 25)
             {
                 // Not enough samples recorded yet.
@@ -382,11 +402,11 @@ public class Sample_TwoHanded1 : MonoBehaviour
             return;
         }
 
-        //if (similarity < 0.6f)
-        //{
-        //    HUDText.text = "Similarity lower than permitted: " + similarity;
-        //    return;
-        //}
+        if (similarity < similarityMin)
+        {
+            HUDText.text = "Similarity lower than permitted: " + similarity;
+            return;
+        }
 
         // else: if we arrive here, we're not recording new samples for custom gestures,
         // but instead have identified a new gesture.

@@ -814,6 +814,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db9ccff4778ae464c9b70412538aaa3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EditMode: 1
+  FakeMode: 0
+  similarityMin: 0.1
   LoadGesturesFile: TwoHanded_Base.dat
   SaveGesturesFile: TwoHanded_Avatar.dat
   ControllerMotionDistanceThreshold: 1
