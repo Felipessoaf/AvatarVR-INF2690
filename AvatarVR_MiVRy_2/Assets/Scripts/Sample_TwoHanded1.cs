@@ -185,6 +185,9 @@ public class Sample_TwoHanded1 : MonoBehaviour
         {
             ControllerMotionTimeThreshold = 0.01;
         }
+
+
+        teleporting = false;
     }
     
 
@@ -577,24 +580,28 @@ public class Sample_TwoHanded1 : MonoBehaviour
         if (teleporting)
         {
             LeftHandEvents.OnTouchpadReleased(LeftHandEvents.SetControllerEvent(ref LeftHandEvents.touchpadPressed, false, 0f));
+            teleporting = false;
         }
         else
         {
             RaycastHit hit;
-            Debug.DrawRay(transform.GetChild(0).position + Vector3.up * 0.5f, transform.GetChild(0).forward * 5, Color.green, 5, false);
-            Debug.DrawRay(transform.GetChild(0).position + Vector3.down * 0.5f, transform.GetChild(0).forward * 5, Color.red, 5, false);
-            if (Physics.Raycast(transform.GetChild(0).position + Vector3.up * 0.5f, transform.GetChild(0).forward, out hit, 5, SocoLayer, QueryTriggerInteraction.Collide))
+
+            Transform headset = VRTK_DeviceFinder.HeadsetTransform();
+
+            Debug.DrawRay(headset.position + Vector3.up * 0.5f, headset.forward * 5, Color.green, 5, false);
+            Debug.DrawRay(headset.position + Vector3.down * 0.5f, headset.forward * 5, Color.red, 5, false);
+            if (Physics.Raycast(headset.position + Vector3.up * 0.5f, headset.forward, out hit, 5, SocoLayer, QueryTriggerInteraction.Collide))
             {
                 if (hit.transform.GetComponent<RockUp>())
                 {
-                    hit.transform.GetComponent<RockUp>().Punch(transform.GetChild(0).forward, 10);
+                    hit.transform.GetComponent<RockUp>().Punch(headset.forward, 10);
                 }
             }
-            else if (Physics.Raycast(transform.GetChild(0).position + Vector3.down * 0.5f, transform.GetChild(0).forward, out hit, 5, SocoLayer, QueryTriggerInteraction.Collide))
+            else if (Physics.Raycast(headset.position + Vector3.down * 0.5f, headset.forward, out hit, 5, SocoLayer, QueryTriggerInteraction.Collide))
             {
                 if (hit.transform.GetComponent<RockUp>())
                 {
-                    hit.transform.GetComponent<RockUp>().Punch(transform.GetChild(0).forward, 10);
+                    hit.transform.GetComponent<RockUp>().Punch(headset.forward, 10);
                 }
             }
         }
