@@ -87,6 +87,8 @@ public class Sample_TwoHanded1 : MonoBehaviour
 
     bool teleporting = false;
 
+    AvatarGestures currentAvatarGesture = AvatarGestures.Gancho;
+
     // Averaged controller motion (distance).
     private double controller_motion_distance_left = 0;
     private double controller_motion_distance_right = 0;
@@ -244,13 +246,13 @@ public class Sample_TwoHanded1 : MonoBehaviour
             // In this mode, the user can press button A/X to create a new gesture
             if (LeftHandEvents.buttonOnePressed || RightHandEvents.buttonOnePressed)
             {
-                int recording_gesture_left = gc.createGesture(Side_Left, "custom gesture " + (gc.numberOfGestures(Side_Left) + 1));
-                int recording_gesture_right = gc.createGesture(Side_Right, "custom gesture " + (gc.numberOfGestures(Side_Right) + 1));
-                recording_gesture = gc.createGestureCombination("custom gesture " + (gc.numberOfGestureCombinations() + 1));
+                int recording_gesture_left = gc.createGesture(Side_Left, currentAvatarGesture.ToString() + "LEFT HAND");
+                int recording_gesture_right = gc.createGesture(Side_Right, currentAvatarGesture.ToString() + "RIGHT HAND");
+                recording_gesture = gc.createGestureCombination(currentAvatarGesture.ToString());
                 gc.setCombinationPartGesture(recording_gesture, Side_Left, recording_gesture_left);
                 gc.setCombinationPartGesture(recording_gesture, Side_Right, recording_gesture_right);
                 // from now on: recording a new gesture
-                HUDText.text = "Learning a new gesture (custom gesture " + (recording_gesture-3) + "):\nPlease perform the gesture 25 times.\n(0 / 25)";
+                HUDText.text = "Learning a new gesture (" + currentAvatarGesture.ToString() + " id:" + (recording_gesture) + "):\nPlease perform the gesture 25 times.\n(0 / 25)";
             }
         }
 
@@ -417,7 +419,7 @@ public class Sample_TwoHanded1 : MonoBehaviour
             if (num_samples < 25)
             {
                 // Not enough samples recorded yet.
-                HUDText.text = "Learning a new gesture (custom gesture " + (recording_gesture - 3) + "):\nPlease perform the gesture 25 times.\n(" + num_samples + " / 25)";
+                HUDText.text = "Learning a new gesture (" + currentAvatarGesture.ToString() + " id:" + (recording_gesture) + "):\nPlease perform the gesture 25 times.\n(" + num_samples + " / 25)";
             }
             else
             {
@@ -553,6 +555,13 @@ public class Sample_TwoHanded1 : MonoBehaviour
         me.last_performance_report = performance;
         // Signal that training was finished.
         me.recording_gesture = -3;
+
+        me.currentAvatarGesture += 1;
+
+        if (me.currentAvatarGesture >= AvatarGestures.None)
+        {
+            me.currentAvatarGesture = 0;
+        }
     }
 
     public void Gancho()
