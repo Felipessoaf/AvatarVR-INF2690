@@ -4,11 +4,26 @@ using UnityEngine;
 
 public class RockUp : MonoBehaviour
 {
+    public static List<RockUp> Rocks;
+
     public float Force = 100;
 
     float lastYPos;
     bool falling = false;
     bool punched = false;
+
+    private static bool allUp;
+    private static bool waitAllDown = false;
+
+    private void Awake()
+    {
+        if(Rocks == null)
+        {
+            Rocks = new List<RockUp>();
+        }
+
+        Rocks.Add(this);
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -19,7 +34,7 @@ public class RockUp : MonoBehaviour
 
     private void Update()
     {
-        if (lastYPos > transform.position.y && !falling && !punched)
+        if (lastYPos > transform.position.y && !falling/* && !punched*/)
         {
             StartCoroutine(WaitToFall());
         }
@@ -38,16 +53,39 @@ public class RockUp : MonoBehaviour
     {
         falling = true;
         GetComponent<Rigidbody>().useGravity = false;
-        yield return new WaitForSeconds(1);
+        if(allUp)
+        {
+            yield return new WaitWhile(() => waitAllDown);
+        }
+        else
+        {
+            yield return new WaitForSeconds(1);
+        }
         GetComponentInChildren<Collider>().isTrigger = false;
         GetComponent<Rigidbody>().useGravity = true;
     }
 
     public void Punch(Vector3 direction, float force)
     {
-        punched = true;
+        //punched = true;
         GetComponentInChildren<Collider>().isTrigger = false;
         GetComponent<Rigidbody>().useGravity = true;
         GetComponent<Rigidbody>().AddForce(direction * force, ForceMode.Impulse);
+    }
+
+    public static void AllRocksUp()
+    {
+        allUp = true;
+        waitAllDown = true;
+        foreach (RockUp rock in Rocks)
+        {
+            rock.Impulse();
+        }
+    }
+
+    public static void AllRocksDown()
+    {
+        waitAllDown = false;
+        allUp = false;
     }
 }

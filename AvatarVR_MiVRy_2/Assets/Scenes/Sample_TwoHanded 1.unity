@@ -727,7 +727,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4000011051854964, guid: fae4d3c6bce5d264f966e5a4fb54fa3a, type: 3}
       propertyPath: m_RootOrder
-      value: 9
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 4000011051854964, guid: fae4d3c6bce5d264f966e5a4fb54fa3a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -884,7 +884,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   EditMode: 1
-  FakeMode: 0
+  FakeMode: 1
   similarityMin: 0.1
   LoadGesturesFile: TwoHanded_Base.dat
   SaveGesturesFile: TwoHanded_Avatar.dat
@@ -892,7 +892,8 @@ MonoBehaviour:
   ControllerMotionTimeThreshold: 0.01
   LeftHandEvents: {fileID: 1173348557}
   RightHandEvents: {fileID: 893251568}
-  RockUp: {fileID: 4877667720743988450, guid: dc06438e7b6a9b942908778347fab7aa, type: 3}
+  RockUpPrefab: {fileID: 4877667720743988450, guid: dc06438e7b6a9b942908778347fab7aa,
+    type: 3}
   SocoLayer:
     serializedVersion: 2
     m_Bits: 512

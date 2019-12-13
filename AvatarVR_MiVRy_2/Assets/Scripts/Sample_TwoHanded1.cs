@@ -79,7 +79,7 @@ public class Sample_TwoHanded1 : MonoBehaviour
     public VRTK_ControllerEvents RightHandEvents;
 
     [Space]
-    public GameObject RockUp;
+    public GameObject RockUpPrefab;
     public LayerMask SocoLayer;
 
     [HideInInspector]
@@ -485,21 +485,21 @@ public class Sample_TwoHanded1 : MonoBehaviour
             {
                 Soco();
             }
-            else if (multigesture_id == (int)AvatarGestures.InfinitoDown)
-            {
-                HUDText.text = "Identified a " + AvatarGestures.InfinitoDown + " gesture!";
-            }
-            else if (multigesture_id == (int)AvatarGestures.SocoXDown)
-            {
-                HUDText.text = "Identified a " + AvatarGestures.SocoXDown + " gesture!";
-            }
             else if (multigesture_id == (int)AvatarGestures.Cavalo)
             {
                 Cavalo();
             }
             else if (multigesture_id == (int)AvatarGestures.SemiCirculoUp)
             {
-                HUDText.text = "Identified a " + AvatarGestures.SemiCirculoUp + " gesture!";
+                SemiCirculoUp();
+            }
+            else if (multigesture_id == (int)AvatarGestures.InfinitoDown)
+            {
+                InfinitoDown();
+            }
+            else if (multigesture_id == (int)AvatarGestures.SocoXDown)
+            {
+                HUDText.text = "Identified a " + AvatarGestures.SocoXDown + " gesture!";
             }
             else if (multigesture_id == (int)AvatarGestures.Concentracao)
             {
@@ -567,7 +567,7 @@ public class Sample_TwoHanded1 : MonoBehaviour
     public void Gancho()
     {
         HUDText.text = "Identified a " + AvatarGestures.Gancho + " gesture!";
-        Instantiate(RockUp, transform.position + transform.forward * 2 - transform.up, RockUp.transform.rotation);
+        Instantiate(RockUpPrefab, transform.position + transform.forward * 2 - transform.up, RockUpPrefab.transform.rotation);
     }
 
     public void Soco()
@@ -606,6 +606,18 @@ public class Sample_TwoHanded1 : MonoBehaviour
 
         LeftHandEvents.OnTouchpadPressed(LeftHandEvents.SetControllerEvent(ref LeftHandEvents.touchpadPressed, true, 1f));
         teleporting = true;
+    }
+
+    public void SemiCirculoUp()
+    {
+        HUDText.text = "Identified a " + AvatarGestures.SemiCirculoUp + " gesture!";
+
+        RockUp.AllRocksUp();
+    }
+
+    public void InfinitoDown()
+    {
+        HUDText.text = "Identified a " + AvatarGestures.InfinitoDown + " gesture!";
     }
 
     public void Teleport()
