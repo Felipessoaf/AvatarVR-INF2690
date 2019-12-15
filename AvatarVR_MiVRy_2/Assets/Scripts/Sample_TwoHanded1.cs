@@ -217,6 +217,14 @@ public class Sample_TwoHanded1 : MonoBehaviour
         {
             Cavalo();
         }
+        else if (Input.GetKeyDown(KeyCode.U))
+        {
+            SemiCirculoUp();
+        }
+        else if (Input.GetKeyDown(KeyCode.I))
+        {
+            InfinitoDown();
+        }
 
         // If recording_gesture is -3, that means that the AI has recently finished learning a new gesture.
         if (recording_gesture == -3)
@@ -638,6 +646,8 @@ public class Sample_TwoHanded1 : MonoBehaviour
     public void InfinitoDown()
     {
         HUDText.text = "Identified a " + AvatarGestures.InfinitoDown + " gesture!";
+
+        RockUp.AllRocksDown();
     }
 
     public void Teleport()
