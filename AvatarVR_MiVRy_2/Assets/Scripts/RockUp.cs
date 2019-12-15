@@ -11,6 +11,8 @@ public class RockUp : MonoBehaviour
     [Space]
     public AudioSource GanchoAudio;
     public AudioSource SocoAudio;
+    public AudioSource UpAudio;
+    public AudioSource DownAudio;
 
     float lastYPos;
     bool falling = false;
@@ -91,11 +93,17 @@ public class RockUp : MonoBehaviour
         foreach (RockUp rock in Rocks)
         {
             rock.Impulse();
+            rock.UpAudio.Play();
         }
     }
 
     public static void AllRocksDown()
     {
+        foreach (RockUp rock in Rocks)
+        {
+            rock.DownAudio.Play();
+        }
+
         waitAllDown = false;
         allUp = false;
     }
