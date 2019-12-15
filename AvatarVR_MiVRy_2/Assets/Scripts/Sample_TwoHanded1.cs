@@ -83,6 +83,9 @@ public class Sample_TwoHanded1 : MonoBehaviour
     public GameObject RockUpPrefab;
     public LayerMask SocoLayer;
 
+    [Space]
+    public AudioSource FlautaAudio;
+
     [HideInInspector]
     public VRTK_Pointer teleportPointer;
 
@@ -502,6 +505,7 @@ public class Sample_TwoHanded1 : MonoBehaviour
 
     void TestAvatarGestures(int multigesture_id)
     {
+        FlautaAudio.Play();
         if (multigesture_id == (int)AvatarGestures.Gancho)
         {
             Gancho();
