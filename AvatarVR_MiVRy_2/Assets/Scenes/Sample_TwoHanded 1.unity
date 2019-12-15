@@ -885,10 +885,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   EditMode: 1
-  FakeMode: 1
+  FakeMode: 0
   similarityMin: 0.1
-  LoadGesturesFile: TwoHanded_Avatar.dat
-  SaveGesturesFile: TwoHanded_Avatar2.dat
+  LoadGesturesFile: TwoHanded_Base.dat
+  SaveGesturesFile: TwoHanded_Avatar.dat
   ControllerMotionDistanceThreshold: 1
   ControllerMotionTimeThreshold: 0.01
   LeftHandEvents: {fileID: 1173348557}
@@ -6196,7 +6196,7 @@ MonoBehaviour:
   virtualGreenScreenApplyDepthCulling: 0
   virtualGreenScreenDepthTolerance: 0.2
   mrcActivationMode: 0
-  _trackingOriginType: 0
+  _trackingOriginType: 1
   usePositionTracking: 1
   useRotationTracking: 1
   useIPDInPositionTracking: 1
