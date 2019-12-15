@@ -591,7 +591,8 @@ public class Sample_TwoHanded1 : MonoBehaviour
     public void Gancho()
     {
         HUDText.text = "Identified a " + AvatarGestures.Gancho + " gesture!";
-        Instantiate(RockUpPrefab, transform.position + transform.forward * 2 - transform.up, RockUpPrefab.transform.rotation);
+        Transform headset = VRTK_DeviceFinder.HeadsetTransform();
+        Instantiate(RockUpPrefab, headset.position + headset.forward * 2 - headset.up, UnityEngine.Random.rotation);
     }
 
     public void Soco()
