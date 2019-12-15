@@ -57,6 +57,7 @@ public class Sample_TwoHanded1 : MonoBehaviour
 
     public bool EditMode = false;
     public bool FakeMode = false;
+    public bool AvatarOnly = false;
     [Range(0, 1)]
     public float similarityMin = 0.3f;
 
@@ -455,59 +456,71 @@ public class Sample_TwoHanded1 : MonoBehaviour
         // else: if we arrive here, we're not recording new samples for custom gestures,
         // but instead have identified a new gesture.
         // Perform the action associated with that gesture.
-        if (multigesture_id < 0)
+        if(AvatarOnly)
         {
-            // Error trying to identify any gesture
-            HUDText.text = "Failed to identify gesture." + "\nSimilarity: " + similarity;
-        }
-        else if (multigesture_id == 0)
-        {
-            HUDText.text = "Identified a \"throw-your-hands-up\" gesture!" + "\nSimilarity: " + similarity;
-        }
-        else if (multigesture_id == 1)
-        {
-            HUDText.text = "Identified a chest-pounding gesture!" + "\nSimilarity: " + similarity;
-        }
-        else if (multigesture_id == 2)
-        {
-            HUDText.text = "Identified a bow-and-arrow gesture!" + "\nSimilarity: " + similarity;
-        }
-        else if (multigesture_id == 3)
-        {
-            HUDText.text = "Identified a heart-shape gesture!" + "\nSimilarity: " + similarity;
+            TestAvatarGestures(multigesture_id);
         }
         else
         {
-            multigesture_id -=  4;
+            if (multigesture_id < 0)
+            {
+                // Error trying to identify any gesture
+                HUDText.text = "Failed to identify gesture." + "\nSimilarity: " + similarity;
+            }
+            else if (multigesture_id == 0)
+            {
+                HUDText.text = "Identified a \"throw-your-hands-up\" gesture!" + "\nSimilarity: " + similarity;
+            }
+            else if (multigesture_id == 1)
+            {
+                HUDText.text = "Identified a chest-pounding gesture!" + "\nSimilarity: " + similarity;
+            }
+            else if (multigesture_id == 2)
+            {
+                HUDText.text = "Identified a bow-and-arrow gesture!" + "\nSimilarity: " + similarity;
+            }
+            else if (multigesture_id == 3)
+            {
+                HUDText.text = "Identified a heart-shape gesture!" + "\nSimilarity: " + similarity;
+            }
+            else
+            {
+                multigesture_id -= 4;
 
-            if (multigesture_id == (int)AvatarGestures.Gancho)
-            {
-                Gancho();
+                TestAvatarGestures(multigesture_id);
             }
-            else if (multigesture_id == (int)AvatarGestures.Soco)
-            {
-                Soco();
-            }
-            else if (multigesture_id == (int)AvatarGestures.Cavalo)
-            {
-                Cavalo();
-            }
-            else if (multigesture_id == (int)AvatarGestures.SemiCirculoUp)
-            {
-                SemiCirculoUp();
-            }
-            else if (multigesture_id == (int)AvatarGestures.InfinitoDown)
-            {
-                InfinitoDown();
-            }
-            else if (multigesture_id == (int)AvatarGestures.SocoXDown)
-            {
-                HUDText.text = "Identified a " + AvatarGestures.SocoXDown + " gesture!";
-            }
-            else if (multigesture_id == (int)AvatarGestures.Concentracao)
-            {
-                HUDText.text = "Identified a " + AvatarGestures.Concentracao + " gesture!";
-            }
+        }
+    }
+
+    void TestAvatarGestures(int multigesture_id)
+    {
+        if (multigesture_id == (int)AvatarGestures.Gancho)
+        {
+            Gancho();
+        }
+        else if (multigesture_id == (int)AvatarGestures.Soco)
+        {
+            Soco();
+        }
+        else if (multigesture_id == (int)AvatarGestures.Cavalo)
+        {
+            Cavalo();
+        }
+        else if (multigesture_id == (int)AvatarGestures.SemiCirculoUp)
+        {
+            SemiCirculoUp();
+        }
+        else if (multigesture_id == (int)AvatarGestures.InfinitoDown)
+        {
+            InfinitoDown();
+        }
+        else if (multigesture_id == (int)AvatarGestures.SocoXDown)
+        {
+            HUDText.text = "Identified a " + AvatarGestures.SocoXDown + " gesture!";
+        }
+        else if (multigesture_id == (int)AvatarGestures.Concentracao)
+        {
+            HUDText.text = "Identified a " + AvatarGestures.Concentracao + " gesture!";
         }
     }
 
